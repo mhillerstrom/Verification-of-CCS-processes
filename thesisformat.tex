@@ -1,0 +1,76 @@
+% Thesis format macros and definitions
+
+\usepackage[latin1]{inputenc}
+\usepackage{latexsym}
+\usepackage[vtex,backref]{hyperref} % always the last package!!
+
+\addtolength{\parskip}{.8\baselineskip}
+
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{example}[definition]{Example}
+\newtheorem{notation}[definition]{Notation}
+
+
+\newcommand{\rel}[1]{\stackrel{#1}{\longrightarrow}}
+\newcommand{\der}[1]{\stackrel{#1}{\longrightarrow}}
+\newcommand{\obder}[1]{\stackrel{#1}{\Longrightarrow}}
+\newcommand{\can}[1]{\!\left<#1\right>\!}
+\newcommand{\obcan}[1]{\!\left<\!\left<#1\right>\!\right>\!}
+\newcommand{\may}[1]{[#1]}
+\newcommand{\obmay}[1]{\may{\!\may{#1}\!}}
+\newcommand{\dtt}{\hbox{t}\!\hbox{t}}
+\newcommand{\dff}{\hbox{f}\!\hbox{f}}
+
+\newcommand{\qed}{{\unskip\nobreak\hfil\penalty50%
+                   \hskip2em\hbox{}\nobreak\hfil\hbox{$\Box$}%
+                   \parfillskip=0pt \finalhyphendemerits=0 \par}}
+\newcommand{\myfrac}[2]{\begin{array}{c}#1\\ \hline#2\end{array}}
+\newcommand{\proof}{\unskip\nobreak\hfill\par{\sc Proof:\ }}
+\newcommand{\subheading}[1]{\hfill\Huge\ \linebreak[4]\rm\ \hfill\linebreak[4]\footnotesize#1}
+\newcommand{\mytt}[2]{\verb#1#2#1}
+\newcommand{\nopagenum}{\gdef\thepage{}}
+
+%% Change default fontface in theorem-like environments.
+\catcode`\@=11
+\def\@begintheorem#1#2{\trivlist
+   \item[\hskip \labelsep{\bfseries #1\ #2}]\slshape}
+\def\@opargbegintheorem#1#2#3{\trivlist
+      \item[\hskip \labelsep{\bfseries #1\ #2\ \slshape [#3]}]\slshape\hfill\linebreak[4]\noindent}
+\def\@endtheorem{\endtrivlist}
+\catcode`\@=12
+%%%%
+
+%%%%%%%%%%%% source listings %%%%%%%%%%%%%%
+\chardef\other=12
+\newif\ifmyverb \global\myverbfalse
+% Here is a list of the characters that have been specially catcoded:
+\def\dospecials{\do\ \do\\\do\{\do\}\do\$\do\&%
+  \do\#\do\^\do\^^K\do\_\do\^^A\do\%\do\~}
+\def\uncatcodespecials{\def\do##1{\catcode`##1=\other}\dospecials}
+\def\myspace{\ifmyverb\relax\allowbreak\ \else\space\fi}%
+{\obeyspaces\global\let =\myspace}
+\def\setupverbatim{\tt%
+                   \def\par{\leavevmode\endgraf}% 
+                   \obeylines\uncatcodespecials% 
+		   \inclsettings%
+                   \lineskip=1em\baselineskip=1em\parskip=.1em%
+                   \everypar{}\obeyspaces\global\myverbtrue}%
+%
+\def\beginlines{\par\begingroup\medskip%
+                \parindent=0pt\lineskip=1em\baselineskip=1em\parskip=.1ex%
+                \everypar{}}%
+\def\endlines{\endgroup\everypar{}\global\myverbfalse\noindent}%
+%
+%
+\gdef\inclsettings{}%
+\newcommand{\inclverbatim}[1]{\beginlines\gdef\inclsettings{\parindent=1.2cm}\setupverbatim\input{#1}\endlines}
+\newcommand{\inclfull}[1]{\beginlines\gdef\inclsettings{\parindent=.6cm}\setupverbatim\input{#1}\endlines}
+\newcommand{\inclbabyfull}[1]{\begingroup\gdef\inclsettings{\parindent=-.5cm\footnotesize}\setupverbatim\input{#1}\endgroup}
+%%%%
+
+\endinput

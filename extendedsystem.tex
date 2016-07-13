@@ -1,0 +1,410 @@
+% chapter : A new extended system
+
+\chapter[A new extended system]{A new extended system\subheading{---arguing for extended bisimulation equivalence and inequivalence}}\label{chapExtended}
+
+We will in this section present the notion of {\em extended bisimulation\/} as a faithful extension of ordinary bisimulation. Furthermore, we will construct and implement a new system arguing for extended bisimulation equivalence and inequivalence. The usefulness of this system is demonstrated by reconsidering the \verb#closedshop#-example (and some further examples in appendix~\ref{appExamples}).
+
+\section{Extended bisimulation}
+As indicated by the \verb#closedshop#-example in section~\ref{secWeakBisim}, some way of relating the bisimulation pairs is required. By the definition of bisimulation (see definition~\ref{defBisim}), we see that each pair, $(p',q')$, is included in the bisimulation, $\cal R$, as a result of matching another pairs's, $(p,q)$, derivations. It will therefore be natural to use this `matching information' as a means of relating the pairs of the bisimulation.
+
+The suggested solution of the above problem is actually inspired by a notational convenience used in~\cite{Prasad} and by a report of L.\@ Halln\"as~\cite{Hallnas}. The idea is essentially to extend the bisimulation pairs to quadruples. Intuitively, for each pair, $(p,q)\in{\cal R}$, we want information relating to $p$'s derivations to $q$'s and vice versa. Now, before defining the notion of {\em extended bisimulation\/} we will state some notational conveniences.
+\begin{notation}
+Let $\hbox{\bf Q}=Pr\times Pr\times 2^{((Act\times Pr)\times Pr)}\times 2^{((Act\times Pr)\times Pr)}$. For each ${\cal R}\subseteq \hbox{\bf Q}$ we define it's projected image ${\cal R}^{\downarrow}$ by
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{(p,q)\in {\cal R}^{\downarrow}\;\Leftrightarrow} \\
+&&& \exists F,G: (p,q,F,G)\in {\cal R}
+\end{array}
+\]
+\qed
+\end{notation}
+\begin{notation}
+For each $F\subseteq ((Act\times Pr)\times Pr)$ we let $DOM(F)$ denote the set
+\[
+\{(a,p')\mid \exists q': (\,(a,p'),q')\in F\}
+\]
+\qed
+\end{notation}
+\begin{notation}
+For each process $p\in Pr$ let
+\[
+DER(p) = \{(a,p')\mid p\der{a}p'\}
+\]
+\qed
+\end{notation}
+Now, an {\em extended bisimulation\/} is given by the following definition.
+\begin{definition}[Extended bisimulation]\label{defExtendedBisim}
+A set ${\cal R}\subseteq \hbox{\bf Q}$ is called an {\em extended bisimulation\/} iff
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{(p,q,F,G)\in {\cal R}\;\;\Rightarrow} \\
+&&1)& DER(p) \subseteq DOM(F) \\
+&&2)& DER(q) \subseteq DOM(G) \\
+&&3)& 
+\begin{array}{llll}
+\multicolumn{4}{l}{p\der{a}p'\Rightarrow}\\
+&&&\forall(\,(a,p'),q')\in F: q\der{a}q'\;\wedge\; (p',q')\in {\cal R}^{\downarrow}
+\end{array}\\
+
+&&4)& 
+\begin{array}{llll}
+\multicolumn{4}{l}{q\der{a}q'\Rightarrow}\\
+&&&\forall(\,(a,q'),p')\in G: p\der{a}p'\;\wedge\; (p',q')\in {\cal R}^{\downarrow}
+\end{array}\\
+
+\end{array}
+\]
+\qed
+\end{definition}
+As for ordinary bisimulations we are able to define an ordering on extended bisimulations.
+\begin{definition}
+$\sqsubseteq\subseteq \hbox{\bf Q}\times \hbox{\bf Q}$ is the relation on $\hbox{\bf Q}$ such that for ${\cal R}, {\cal S}\in \hbox{\bf Q}$
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{{\cal R}\sqsubseteq{\cal S}\;\Leftrightarrow}\\
+&(p,q,F,G)\in{\cal R}\;\Rightarrow\;\exists F',G':(p,q,F',G')\in{\cal S}\;\wedge\;F\subseteq F'\;\wedge\;G\subseteq G'&&
+\end{array}
+\]
+\qed
+\end{definition}
+\begin{corollary}\label{coRS}
+For all ${\cal R}, {\cal S} \in \hbox{\bf Q}$ we have that
+\[
+{\cal R}\sqsubseteq{\cal S}\;\Rightarrow {\cal R}^{\downarrow}\subseteq{\cal S}^{\downarrow}
+\]
+\qed
+\end{corollary}
+\begin{proposition}
+$(\hbox{\bf Q},\sqsubseteq)$ is a partial ordering.
+\proof We must show that $\sqsubseteq$ is a reflexive and anti-symmetrical ordering on $\hbox{\bf Q}$, which follows straight forward from its definition.
+\qed
+\end{proposition}
+Furthermore, $\sqsubseteq$ makes $\hbox{\bf Q}$ into a complete lattice.
+\begin{proposition}
+$(\hbox{\bf Q},\sqsubseteq)$ is a complete lattice.
+\proof Let $\{{\cal R}_i\mid i\in I\}$ be a family of relations from $\hbox{\bf Q}$. Obviously, $\bigcup_i{\cal R}_i$ is an upper bound for any ${\cal R}_i$. Now, assume ${\cal R}_i\sqsubseteq U$ for all $i\in I$ for some $U\in \hbox{\bf Q}$. We must show $\bigcup_i{\cal R}_i\sqsubseteq U$. However, this follows trivially since $(p,q,F,G)\in{\cal R}_i$ for some $i\in I$ whenever $(p,q,F,G)\in\bigcup_i{\cal R}_i$
+\qed
+\end{proposition}
+Now, for ${\cal R}\subseteq \hbox{\bf Q}$ we define ${\cal B}_E\subseteq \hbox{\bf Q}$ as
+\begin{equation}\label{eqBeofR}
+{\cal B}_E({\cal R}) = \{(p,q,F,G)\mid \mbox{(1)--(4) of definition~\ref{defExtendedBisim} holds}\}
+\end{equation}
+Then ${\cal B}_E$ has the following properties.
+\begin{proposition}
+${\cal B}_E$ is a monotonic endofunction on the complete lattice $(\hbox{\bf Q},\sqsubseteq)$.
+\proof Follows easily from corollary~\ref{coRS} and from the definition of ${\cal B}_E$ (equation~\ref{eqBeofR}) as
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{{\cal R}\sqsubseteq{\cal S}\;\Rightarrow\;{\cal R}^{\downarrow}\subseteq{\cal S}^{\downarrow}\;\Rightarrow}\\
+&&&{\cal B}_E({\cal R})\subseteq {\cal B}_E({\cal S})
+\end{array}
+\]
+by the definition.
+\qed
+\end{proposition}
+Using the standard fixed-point result, due to Tarski, this implies
+\begin{proposition}
+${\cal B}_E$ has a maximal fixed-point $\sim_E$ given by
+\[
+\sim_E = \bigcup\{{\cal R}\mid {\cal R}\sqsubseteq{\cal B}_E({\cal R})\}
+\]
+\qed
+\end{proposition}
+To see that this notion is a faithful extension of the standard notion of bisimulation, we state the following lemma.
+\begin{lemma}
+\[
+\begin{array}{llll}
+\mbox{1.\ \ } & \multicolumn{3}{l}{{\cal R}\mbox{ is an extended bisimulation}\;\Rightarrow}\\
+&&&{\cal R}^{\downarrow}\mbox{ is a bisimulation}\\
+\mbox{2.\ \ } & \multicolumn{3}{l}{{\cal S}\mbox{ is an extended bisimulation}\;\Rightarrow}\\
+&&&\exists{\cal R}: {\cal R} \mbox{ is an extended bisimulation}\;\wedge\; {\cal R}^{\downarrow} = {\cal S}\\
+\end{array}
+\]
+\proof (1) follows readily from the definition of extended bisimulation and ${}^{\downarrow}$. To see (2), assume $\cal S$ is a bisimulation. Then a corresponding extended bisimulation, $\cal R$, can be constructed by for each pair $(p,q)\in{\cal S}$ adding the quadruple $(p,q,F,G)$ to $\cal R$ where $F$ and $G$ are constructed such that
+\begin{enumerate}
+\item $(a,p')\in DER(p)\;\wedge\;(p',q')\in S\;\Rightarrow\; (\,(a,p'),q')\in F$
+\item $(a,q')\in DER(q)\;\wedge\;(p',q')\in S\;\Rightarrow\; (\,(a,q'),p')\in G$
+\end{enumerate}
+Clearly, $\cal R$ is an extended bisimulation and ${\cal R}^{\downarrow} = {\cal S}$.
+\qed
+\end{lemma}
+From this lemma it follows as an easy corollary that $(\sim_E)^{\downarrow}$.
+
+In the following section we will use the above results by briefly discussing the construction and implementation of a system similar to the previously constructed system (see figure~\ref{figNewSysInference}) arguing for extended bisimulation equivalence and inequivalence.
+
+
+\section{Construction and implementation}
+In order to construct $F$ and $G$ `incrementally' while `running through' the inference system some auxiliary functions are needed for convenience. Let
+\[
+\left.\begin{array}{l}
+add_{to}F\\
+add_{to}G
+\end{array}\right\} : Pr\times Pr\times((Act\times Pr)\times Pr)\times 2^Q \mapsto 2^Q
+\]
+be defined as
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{add_{to}F(p,q,(\,(a,p'),q'),B) =}\\
+&&& \{(p,q,\{(\,(a,p'),q')\}\cup F,G)\}\cup (B\setminus \{(p,q,F,G)\})\\
+\multicolumn{4}{l}{add_{to}G(p,q,(\,(a,q'),p'),B) =}\\
+&&& \{(p,q,F,\{(\,(a,q'),p')\}\cup G)\}\cup (B\setminus \{(p,q,F,G)\})\\
+\end{array}
+\]
+where $(p,q,F,G)\in B$ for some $F$ and $G$.
+
+Now, by making appropriate changes to the verification conditions of figure~\ref{figNewSysVerification}, we obtain the verification conditions in figure~\ref{figExtVerification}. Then the soundness and restricted completeness of the new inference system in figure~\ref{figExtBisI} and~\ref{figExtBisII} follows by using argument similar to the arguments used proving the inference system of figure~\ref{figNewSysInference}.
+\begin{figure}
+\begingroup\footnotesize
+\[
+\begin{array}{lll}
+\multicolumn{3}{l}{Bis(p,q,\overline{C},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+(\,(p,q)\in \overline{C}^{\downarrow}\;\wedge\; \overline{C}^{\downarrow}\subseteq{\cal B}(\overline{C}^{\downarrow})\,) \;\vee\\
+(\overline{{\cal F}_{out}}\models p\not\sim q)\;\wedge\;\overline{{\cal F}_{out}}  \mbox{ is AI}
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Cl(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B^{\downarrow} \;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}
+\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\; \wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\sqsubseteq \overline{C}\; \wedge\\
+\overline{C}^{\downarrow}\setminus (B^{\downarrow}\setminus \{(p,q)\})\subseteq {\cal B}(\overline{C}^{\downarrow})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Ml(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B^{\downarrow}\;\wedge\\
+M\subseteq\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_M,q)\in{\cal L}(B^{\downarrow})\;\wedge\;{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\; \wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\sqsubseteq \overline{D}\; \wedge\\
+\overline{D}^{\downarrow}\setminus B^{\downarrow}\subseteq {\cal B}(\overline{D}^{\downarrow})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D}^{\downarrow})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Mr(p,q,N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B^{\downarrow}\;\wedge\\
+N\subseteq\{(a,q')\mid q\der{a}q'\}\;\wedge\\
+(p,q_N)\in{\cal R}(B^{\downarrow})\;\wedge\;{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\; \wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\sqsubseteq \overline{D}\; \wedge\\
+\overline{D}^{\downarrow}\setminus B^{\downarrow}\subseteq {\cal B}(\overline{D}^{\downarrow})\;\wedge\\
+(p,q)\in{\cal R}(\overline{D}^{\downarrow})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+\multicolumn{3}{l}{\mbox{where } p_M = \sum_{}\{(a.p'\mid p\der{a}p'\;\wedge\;(a,p')\not\in M\}.}
+
+\end{array}
+\]
+\endgroup
+\caption{Verification conditions for extended bisimulations\label{figExtVerification}}
+\end{figure}
+\begin{figure}
+\begingroup\tiny%\scriptsize%\footnotesize
+\[
+\begin{array}{r@{\;\;}c@{\;\;\;\;}l}
+B & : &
+\myfrac{closure(p,q,\{(p,q,\emptyset,\emptyset)\},\overline{C},\emptyset,\overline{{\cal F}_{out}})}{bisim(p,q,\overline{C},\overline{{\cal F}_{out}})}\\
+\\[.5\baselineskip]
+
+C & : &
+\myfrac{matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;\;matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_1\not\models p\not\sim q\;\wedge\\
+M=\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+N=\{(a,q')\mid q\der{a}q'\}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchl(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{out}\models p\not\sim q\;\wedge\\
+M=\{(a,p')\mid p\der{a}p'\}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+
+ML& : &
+\myfrac{}{matchl(p,q,\emptyset,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{in}})}\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchl(p,q,M,B_1,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+\exists q':q\der{a}q'\;\wedge\\
+(p',q',F',G')\in B\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+B_1=add_{to}F(p,q,(\,(a,p'),q'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q',\emptyset,\emptyset)\}\cup B_1,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+q\der{a}q'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+{\cal F}_{in}\not\models p'\not\sim q'\;\wedge\\
+{\cal F}_{1}\models p'\not\sim q'\;\wedge\\
+B_1=add_{to}F(p,q,(\,(a,p'),q'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q',\emptyset,\emptyset)\}\cup B_1,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchl(p,q,M,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+q\der{a}q'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+{\cal F}_{in}\not\models p'\not\sim q'\;\wedge\\
+{\cal F}_{1}\not\models p'\not\sim q'\;\wedge\\
+B_1=add_{to}F(p,q,(\,(a,p'),q'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{B},{\cal F}_{in},\{(p,q,\can{a}F')\}\cup{\cal F}_{in})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+F'=\bigwedge\{F_1,\ldots,F_n\}\;\wedge\\
+\mbox{where }\{q'_1,\ldots,q'_n\}=\{q'\mid q\der{a}q'\}\\
+\mbox{and }\forall i:(p',q'_i,F_i)\in{\cal F}_{in}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchl(p,q,M,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\models p\not\sim q\\
+\end{array}
+\right.\\
+
+\end{array}
+\]
+\endgroup\caption{Inference rules for extended bisimulations\label{figExtBisI}}
+\end{figure}
+\begin{figure}
+\begingroup\tiny%\scriptsize%\footnotesize
+\[
+\begin{array}{r@{\;\;}c@{\;\;\;\;}l}
+MR& : &
+\myfrac{}{matchr(p,q,\emptyset,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{in}})}\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchr(p,q,N,B_1,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+\exists q':q\der{a}q'\;\wedge\\
+(p',q',F',G')\in B\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+B_1=add_{to}G(p,q,(\,(a,q'),p'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q',\emptyset,\emptyset)\}\cup B_1,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+p\der{a}p'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+{\cal F}_{in}\not\models p'\not\sim q'\;\wedge\\
+{\cal F}_{1}\models p'\not\sim q'\;\wedge\\
+B_1=add_{to}G(p,q,(\,(a,q'),p'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q',\emptyset,\emptyset)\}\cup B_1,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+p\der{a}p'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+{\cal F}_{in}\not\models p'\not\sim q'\;\wedge\\
+{\cal F}_{1}\not\models p'\not\sim q'\;\wedge\\
+B_1=add_{to}G(p,q,(\,(a,q'),p'),B)
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{B},{\cal F}_{in},\{(p,q,\may{a}F')\}\cup{\cal F}_{in})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\not\models p\not\sim q\;\wedge\\
+F'=\bigvee\{F_1,\ldots,F_n\}\;\wedge\\
+\mbox{where } \{p'_1,\ldots,p'_n\}=\{p'\mid p\der{a}p'\}\\
+\mbox{and }\forall i:(p'_i,q',F_i)\in{\cal F}_{in}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchr(p,q,N,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\models p\not\sim q\\
+\end{array}
+\right.
+\end{array}
+\]
+\endgroup\caption{Inference rules for extended bisimulations (cont.)\label{figExtBisII}}
+\end{figure}
+
+We are thus for each bisimulation pair $(p,q)\in{\cal R}$ able to printout exactly which pair $(p',q')\in {\cal R}$ of processes a specific action will result in i.e.\@ how the derivations are matched. We want this information to be displayed along with the bisimulation pairs. However, in order to obtain a good layout it is not the matching process pairs $(p',q')$ we want to display but rather a (unique) number corresponding to the bisimulation pair $(p',q')$ in order to minimize the amount of redundant information displayed.
+
+The easiest way to implement this seems to be by performing a post-processing on the extended bisimulation relation found. This processing can be made in two stages:
+\begin{enumerate}
+\item Assign a (unique) number to each quadruple.
+\item For each of the processes in each pair of the enumerated extended bisimulation generate a set $\{(a,no),\ldots\}$ where $a$ is the action performed and $no$ is the number of the related quadruple.
+\end{enumerate}
+By using a system implementing the above principle the (extended) bisimulation of the \verb#closedshop# will now be represented as
+\inclbabyfull{prolog/examples/ex21.out}%
+Note, that \verb#LHS# refers to the left hand side of the bisimulation pair (\verb#closedshop# in this example) and \verb#RHS# the right hand side. For pair \verb#0# then, \verb#closedshop# can perform an \verb#injob#-experiment which is matched by pair number \verb#5# but it can also perform an \verb#injob#-experiment which is matched by pair \verb#1#. \verb#donothing# can only perform one action, \verb#injob#, which is matched by the pair numbered \verb#1#. Similarly, we can study each of the pairs and thereby get a better insight into {\em how\/} the bisimulation found actually fits together. Appendix~\ref{appExamples} shows the result of running the previous examples shown to be bisimulation equivalent through this system. Appendix~ref{appExtProlog} contains the full listing of the PROLOG-program corresponding to the inference system of figures~\ref{figExtBisI} and~\ref{figExtBisII}.
+% end of chapter
+

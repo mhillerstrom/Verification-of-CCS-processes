@@ -1,0 +1,661 @@
+% chapter : Existing Systems
+
+%\chapter{Existing Systems}\label{chapExisting}
+\chapter[Existing Systems]{Existing Systems\subheading{---arguing for bisimulation equivalence and inequivalence.}}\label{chapExisting}
+
+In this section two existing systems will be presented---each taking a different approach towards proving (or disproving) bisimulation equivalence between two CCS-processes---emphasizing the principles of operation. The first system tries to find a `maximal' bisimulation whereas the second system tries to find a `minimal' bisimulation including a given pair. In contrast to the `minimal' system, the `maximal' system also gives information in the case of inequivalence. Following the modal characterization result of theorem~\ref{theoModalCharacterization} the information given is a modal property enjoyed by one of the processes.
+
+Finally, a way of extending the `minimal' system in order to enable it to give modal property as an argument of inequaility is presented.
+
+
+\section{The `maximal' system}
+The first system to be presented is the system trying to find a `maximal' bisimulation of two processes. This system is a result of a master thesis work done by Karsten Vestmar and J\o rgen Olesen~\cite{VestmarOlesen}, inspired by~\cite{Larsen}. Actually, `maximal' is a bit misleading, as this system constructs `$\sim$' (the strong equivalence relation) restricted to the two processes under consideration and their derivatives.
+
+The authors approach is an application of the {\em generalized partitioning problem\/}~\cite{Larsen}. A {\em partitioning\/} of a set $S$ consists of disjoint, nonempty subsets of $S$ called {\em blocks\/}, whose union is $S$.
+
+\begin{definition}[Generalized partitioning problem]\label{defGenPartProblem}
+As input is given a finite set $S$, an initial partitioning of $S$, $\Gamma^{\bf P}_0 = \{B_1,\ldots,B_p\}$ and $k$ functions with $f_l: S\mapsto 2^S, 1\leq l\leq k$. The problem is to find the coarsest partitioning $\Gamma^{\bf P}_f = \{ E_1,\ldots,E_q\}$ of $S$ such that
+\begin{enumerate}
+\item $\Gamma^{\bf P}_f$ is a refinement of $\Gamma^{\bf P}_0$\hfill\hbox{}\linebreak[4]
+(i.e.\@ each block $E_i$ is a subset of some $B_j$)
+\item For all blocks $E_i$, all $a,b\in E_i$, any function $f_l$ and any block $E_j$
+\[
+f_l(a)\cap E_j\not= \emptyset\;\Leftrightarrow\; f_l(b)\cap E_j\not=\emptyset
+\]
+\end{enumerate}
+\qed
+\end{definition}
+
+Uniqueness and existence of $\Gamma^{\bf P}_f$ is covered by~\cite{Larsen}. Now, the general partitioning problem is applied in order to solve the (strong) bisimulation equivalence problem as follows: first, for any finite process system ${\bf P} = (Pr,Act,\der{})$, let $\Lambda_{\bf P}$ be the generalized partitioning system consisting of the set $Pr$, the initial partitioning $\Gamma^{\bf P}_0 = \{Pr\}$ and $\|Act\|$ functions $f_a: Pr\mapsto 2^{Pr}$ for $a\in Act$, with $f_a(p) = \{p'\mid p\der{a}p'\}$. Let $\Gamma^{\bf P}_f$ be the solution to $\Lambda_{\bf P}$. Then the following holds:
+
+\begin{theorem}
+For all processes $p$ and $q$ of $\bf P$, $p\sim q$ if and only if $p$ and $q$ belong to the same block of $\Gamma^{\bf P}_f$.
+\proof\linebreak[4]
+\underline{$\Leftarrow$:} Show that the relation ${\cal R}\subseteq Pr\times Pr$ defined by:
+\[
+p{\cal R}q\;\Leftrightarrow\; \exists i: p,q\in E_{i},\;\;\; E_i\; \hbox{is a block in}\;\Gamma^{\bf P}_f
+\]
+is a strong bisimulation and thus ${\cal R}\subseteq\sim$. Let $p{\cal R}q$ and $p\der{a}p'$. Now, assume $p'\in E_j$, where $E_j$ is some block of $\Gamma^{\bf P}_f$. $\{p'\}\subseteq f_a(p)\cap E_j \not=\emptyset$ by definition~\ref{defGenPartProblem} and thus by the same definition it follows that $f_a(q)\cap E_j\not=\emptyset$, and hence $\exists q'\in E_j: q\der{a}q'$.
+\hfill\hbox{}\linebreak[4]
+\underline{$\Rightarrow$:} Let $Pr_\sim$ be the set of equivalence classes of $Pr$ under $\sim$. $Pr_\sim$ is by definition a partitioning of $Pr$ and it is obvious that $Pr_\sim$ satisfies (1) and (2) of definition~\ref{defGenPartProblem}. Thus, by definition, $\Gamma^{\bf P}_f$ is coarser than $Pr_\sim$, i.e.\@ ``$\Rightarrow$'' follows immediately.
+\qed
+\end{theorem}
+
+\noindent
+Intuitively, the algorithm applied by~\cite{VestmarOlesen} works as follows. Let $\Gamma^{\bf P}_0 =\{Pr\}$. Our goal is to find the coarsest partitioning $\Gamma^{\bf P}_f = \{E_1,\ldots,E_n\}$ (the solution) of $\Lambda_{\bf P}$ such that whenever $p,q\in E_i$ then $p\sim q$, Let $\Gamma^{\bf P}_n = \{B1,\ldots,B_k\}$ be the result of $n$ refinements (partitions of $\Gamma^{\bf P}_0$) then $\Gamma^{\bf P}_{n+1}$ is constructed as follows: For each block $B_i\in\Gamma^{\bf P}_n$ choose any $p\in B_i$. We will now use $p$ and its immediate derivatives (determined by $\der{}$) as the criterion for whether or not to split $B_i$ into two, $B_i = B'_i\cup B''_i$. $B'_i$ is defined to contain all processes `equivalent' to $p$ (relative to $\Gamma^{\bf P}_n$), and $B''_i$ contains the rest, i.e.\@
+\[
+\begin{array}{l}
+B'_i = \{q\in B_i\mid\forall a\forall j\exists p'\in B_j: p\der{a}p'\;\Leftrightarrow\; \exists q'\in B_j:q\der{a}q'\}\\
+B''_i = B_i\setminus B'_i\\
+\end{array}
+\]
+The split is only performed if both $B'_i$ and $B''_i$ are non-empty. Thus, at each step any block is at most split into two.
+
+\begin{example}\label{examPartitioning}
+Let {\bf P} be given by the diagram below:
+
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(21.00,40.00){\makebox(0,0)[cc]{$p_1$}}
+\put(20.00,38.00){\vector(-1,-2){6}}
+\put(15.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(22.00,38.00){\vector(1,-2){6}}
+\put(27.00,33.00){\makebox(0,0)[cc]{$a$}}
+
+\put(15.00,24.50){\makebox(0,0)[cc]{$p_2$}}
+\put(14.50,23.00){\vector(0,-1){15}}
+\put(13.00,16.50){\makebox(0,0)[cc]{$b$}}
+\put(15.00,6.50){\makebox(0,0)[cc]{$NIL$}}
+
+\put(28.00,24.50){\makebox(0,0)[cc]{$p_3$}}
+\put(27.50,23.00){\vector(0,-1){15}}
+\put(29.00,16.50){\makebox(0,0)[cc]{$c$}}
+\put(28.00,6.50){\makebox(0,0)[cc]{$NIL$}}
+
+\put(62.00,40.00){\makebox(0,0)[cc]{$q_1$}}
+\put(61.50,38.00){\vector(0,-1){15}}
+\put(63.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(61.50,21.70){\makebox(0,0)[cc]{$q_2$}}
+\put(60.00,20.00){\vector(-1,-2){6}}
+\put(55.00,14.00){\makebox(0,0)[cc]{$b$}}
+\put(63.00,20.00){\vector(1,-2){6}}
+\put(68.00,14.00){\makebox(0,0)[cc]{$c$}}
+\put(52.00,6.50){\makebox(0,0)[cc]{$NIL$}}
+\put(71.00,6.50){\makebox(0,0)[cc]{$NIL$}}
+\end{picture}
+
+\noindent
+then the following sequence of partitionings could be the result of using the above mentioned algorithm:
+\[
+\begin{array}{l@{\;\;\; =\;\;\; }l}
+\Gamma^{\bf P}_0 & \{\{p_1,p_2,p_3,q_1,q_2,NIL\}\},\\
+\Gamma^{\bf P}_1 & \{\{p_1,q_1\},\{p_2,p_3,q_2,NIL\}\},\\
+\Gamma^{\bf P}_2 & \{\{p_1,q_1\},\{p_2\},\{p_3,q_2,NIL\}\},\\
+\Gamma^{\bf P}_3 & \{\{p_1\},\{q_1\},\{p_2\},\{p_3\},\{q_2,NIL\}\},\\
+\Gamma^{\bf P}_4 & \{\{p_1\},\{q_1\},\{p_2\},\{p_3\},\{q_2\},\{NIL\}\},\\
+\Gamma^{\bf P}_f & \{\{p_1\},\{q_1\},\{p_2\},\{p_3\},\{q_2\},\{NIL\}\}.\\
+\end{array}
+\]
+\noindent
+Notice that $p_1$ and $q_1$ are in separate blocks in $\Gamma^{\bf P}_f$ indicating $p\not\sim q$. Also, the partitioning could have been ended already in $\Gamma^{\bf P}_3$ if we had detected that $p_1$ and $q_1$ were separated at that point. However, then we would not have established $\sim$, which $\Gamma^{\bf P}_f$ gives us.
+
+This partitioning can alternatively be represented as in the following drawing where the numbers corresponds to the partitionings.
+
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(45.00,22.00){\oval(75,40)}
+\put(6.50,10.00){\makebox(0,0)[c]{\footnotesize 0}}
+
+\put(81.50,15.00){\oval(2,2)[br]}
+\put(34.50,14.00){\line(1,0){47}}
+\put(34.50,13.00){\oval(2,2)[tl]}
+\put(33.50,13.00){\line(0,-1){10}}
+\put(32.50,3.00){\oval(2,2)[br]}
+\put(55.00,15.50){\makebox(0,0)[c]{\footnotesize 3}}
+\put(55.50,7.00){\makebox(0,0)[c]{$p_3$}}
+\put(32.50,6.00){\makebox(0,0)[c]{\footnotesize 3}}
+
+\put(8.50,30.00){\oval(2,2)[bl]}
+\put(8.50,29.00){\line(1,0){67}}
+\put(55.50,30.00){\oval(2,2)[br]}
+\put(56.50,30.00){\line(0,1){11}}
+\put(57.50,41.00){\oval(2,2)[tl]}
+\put(55.50,35.00){\makebox(0,0)[c]{\footnotesize 3}}
+\put(35.00,35.00){\makebox(0,0)[c]{$p_1$}}
+\put(25.00,30.50){\makebox(0,0)[c]{\footnotesize 1}}
+
+\put(75.50,28.00){\oval(2,2)[tr]}
+\put(76.50,28.00){\line(0,-1){10}}
+\put(77.50,18.00){\oval(2,2)[bl]}
+\put(77.50,17.00){\line(1,0){4}}
+\put(81.50,18.00){\oval(2,2)[br]}
+\put(70.00,35.00){\makebox(0,0)[c]{$q_1$}}
+\put(71.00,30.50){\makebox(0,0)[c]{\footnotesize 1}}
+\put(40.50,15.00){\oval(2,2)[br]}
+\put(41.50,15.00){\line(0,1){13}}
+\put(42.50,28.00){\oval(2,2)[tl]}
+\put(65.00,21.00){\makebox(0,0)[c]{$q_2$}}
+\put(42.50,20.00){\makebox(0,0)[c]{\footnotesize 4}}
+
+\put(40.50,19.00){\oval(2,2)[br]}
+\put(8.50,18.00){\line(1,0){32}}
+\put(8.50,17.00){\oval(2,2)[tl]}
+\put(18.00,10.00){\makebox(0,0)[c]{$NIL$}}
+\put(12.00,19.50){\makebox(0,0)[c]{\footnotesize 2}}
+\put(21.00,23.00){\makebox(0,0)[c]{$p_2$}}
+
+\end{picture}
+
+\qed
+\end{example}
+
+Apparently, what we are doing is to split $Pr$ into equivalence classes. When the solution $\Gamma^{\bf P}_f$ is reached we simply have to look through the equivalence classes of $\Gamma^{\bf P}_f$ to determine whether or not $p$ and $q$ belong to the same block $E_i$ which will verify $p\sim q$. (We know when $\Gamma^{\bf P}_f$ is reached, as $\Gamma^{\bf P}_f$ is the fixed-point of the finite sequence $\Gamma^{\bf P}_i$ i.e.\@ when for a partitioning $\Gamma^{\bf P}_n$ none of the blocks $B_i\subseteq \Gamma^{\bf P}_n$ are split, then $\Gamma^{\bf P}_f$ = $\Gamma^{\bf P}_n$).
+
+From the modal characterization of strong equivalence (theorem~\ref{theoModalCharacterization}) we know that in case $p\not\sim q$ then there exists a model expression $F$ such that $p\models F$ and $q\not\models F$. $F$ can be regarded as {\em the reason why\/} $p$ and $q$ are inequivalent. This fact is used by this system so that it returns a modal expression $F$ with $p\models F$ and $q\not\models F$ when $p\not\sim q$. This is implemented by assigning properties to each block $B_i$ in the following manner; each block $B_i$ of the current partitioning is associated with a modal expression $F_i$ such that
+\begin{equation}\label{eqModalAssoc}
+\forall p\in B_i: p\models F_i\;\wedge\; \forall q\in B_j, i\not=j:q\not\models F_i
+\end{equation}
+Thus, the property $F_i$ is characteristic for the block $B_i$. The following strategy ensures the invariance of the above property: The single block of the initial partitioning is associated with the modal expression $\dtt$; this will clearly satisfy the property in equation~\ref{eqModalAssoc}. Let $B''_i=\{q_1,\ldots,q_n\}$ and consider any $q_j$. Then either
+\[
+\exists k\exists p'\in B_k: p\der{a}p'\;\wedge\; \forall q':q_j\der{a}q'\Rightarrow q'\not\in B_k
+\]
+or
+\[
+\exists k\exists q'\in B_k: q\der{a}q'\;\wedge\; \forall p':p\der{a}p'\Rightarrow p'\not\in B_k
+\]
+will hold. The property $F_{ij}$ ($p\models F_{ij}\;\wedge\; q_j\not\models F_{ij}$) can then be defined as
+\[
+F_{ij} = \can{a}F_k
+\]
+and
+\[
+F_{ij} = \neg\can{a}F_k
+\]
+respectively. Thus we can define $F'_i$ and $F''_i$ in terms of the $F_{ij}$'s as
+\[
+\begin{array}{c}
+F'_i = F_i\wedge (F_{i1}\wedge\ldots\wedge F_{in})\\
+F''_i = F_i\wedge (\neg F_{i1}\vee\ldots\vee\neg F_{in})\\
+\end{array}
+\]
+Then clearly $p\models F'_i$ and $q_j\not\models F'_i$ as $q_j\not\models F_{ij}$. Similarly, $p\not\models F''_i$ as $p\not\models\neg F_{ij}$ and $q_j\models F''_i$ and $q_j\not\models F_{ij}$. Thus, this principle secures the desired property of the modal expression assigned to each block $B_i$. Example~\ref{examPartitioningApply} shows a possible result of applying this algorithm to example~\ref{examPartitioning}.
+
+\begin{example}\label{examPartitioningApply}
+Let each block $B_j$ in a partitioning $\Gamma^{\bf P}_i$ be denoted by $B_{ij}$ and let $\models\subseteq 2^{Pr}\times M$ so that $B_{ij} \models F\;\Leftrightarrow\; \forall p\in B_{ij}: p\models F, F\in M$. Then the following modal expressions can be constructed using the above mentioned principle on example~\ref{examPartitioning} (deleting double negations when necessary).
+\[
+\begin{array}{l@{\;\;}c@{\;\;\;}l}
+B_{01} &\models & \dtt\\
+\\
+
+B_{11} &\models & \dtt \wedge \can{a}\dtt\\
+B_{12} &\models & \dtt \wedge \neg\can{a}\dtt\\
+\\
+
+B_{21} &\models & \dtt \wedge \can{a}\dtt\\
+B_{22} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge\can{b}(\dtt\wedge\neg\can{a}\dtt))\\
+B_{23} &\models & \dtt \wedge\neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\\
+\\
+
+B_{31} &\models & \dtt \wedge \can{a}\dtt \wedge\\
+&&\can{a}(\dtt\wedge\neg\can{a}\dtt\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge\can{b}(\dtt\wedge\neg\can{a}\dtt)))\\
+\\
+B_{32} &\models & \dtt \wedge \neg\can{a}\dtt \wedge\\
+&&\can{a}(\dtt\wedge\neg\can{a}\dtt\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge\can{b}(\dtt\wedge\neg\can{a}\dtt)))\\
+\\
+B_{33} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge\\
+&&\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge\can{b}(\dtt\wedge\neg\can{a}\dtt))\\
+B_{34} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&(\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))\wedge\\
+&&\neg\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))))\\
+B_{35} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\vee\\
+&&\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))))\\
+\\
+
+B_{41} &\models & \dtt \wedge \can{a}\dtt \wedge\\
+&&\can{a}(\dtt\wedge\neg\can{a}\dtt)\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)))\\
+\end{array}
+\]
+
+\[
+\begin{array}{l@{\;\;}c@{\;\;\;}l}
+B_{42} &\models & \dtt \wedge \can{a}\dtt \wedge\\
+&&\neg\can{a}(\dtt\wedge\neg\can{a}\dtt\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)))\\
+B_{43} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt)\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt)\wedge(\can{b}(\dtt\wedge\neg\can{a}\dtt))\\
+B_{44} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&(\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&\neg\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))))\\
+B_{45} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))\vee\\
+&&\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))))\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))\vee\\
+&&\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))))\\
+B_{46} &\models & \dtt \wedge \neg\can{a}\dtt \wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))\vee\\
+&&\neg\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt))))\wedge\\
+&&(\neg\can{c}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))\vee\\
+&&\can{b}(\dtt\wedge\neg\can{a}\dtt\wedge(\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\neg\can{b}(\dtt\wedge\neg\can{a}\dtt)))))\\
+
+\end{array}
+\]
+As $p_1\in B_{41}$ and $q_1\in B_{42}$ we have $p_1\not\sim q_1$. By using the adopted notational conventions (see notation~\ref{notationDerShorthand}, $p_1$'s and $q_1$'s properties can be rewritten as:
+\[
+\begin{array}{l@{\;\;}c@{\;\;\;}l}
+p_1 & \models & \dtt\wedge\can{a}\dtt\wedge\can{a}(\dtt\wedge\may{a}\dff\wedge\can{b}(\dtt\wedge\may{a}\dff)\wedge\\
+&&\may{c}(\dff\vee\can{a}\dtt)\wedge\can{b}(\dtt\wedge\may{a}\dff))\\
+q_1 & \models & \dtt\wedge\can{a}\dtt\wedge\may{a}(\dff\vee\can{a}\dtt\vee\may{b}(\dff\vee\can{a}\dtt)\vee\can{c}(\dtt\wedge\neg\can{a}\dtt)\vee\\
+&&\may{b}(\dff\vee\may{a}\dff))\\
+\end{array}
+\]
+\noindent
+by removing the negations. It is easy to see that two alternative and simpler---though not equivalent---properties distinguishing $p_1$ and $q_1$ are:
+\[
+\begin{array}{l@{\;\;}c@{\;\;\;}l}
+p_1 & \models & \can{a}\may{c}\dff\\
+q_1 & \models & \may{a}\can{c}\dtt\\
+\end{array}
+\]
+\qed
+\end{example}
+
+As can be seen from this example the above method will for even simple processes produce unnecessarily complicated modal expressions. This (major) deficiency, however, can be remedied by applying a formula reduction algorithm~\cite{VestmarOlesen}. Unfortunately, the implementation of~\cite{VestmarOlesen} still remains to be extended in order to cater for recursively defined processes. However, as can be seen from above, there is no theoretical reason why this extension should not be possible.
+
+
+\section{The `minimal' system}
+The second system to be presented is the system trying to find a `minimal' bisimulation containing two given processes. This system is the one presented in Kim G.~Larsen's Ph.D.~Thesis~\cite{Larsen}. The system is implemented in PROLOG~\cite{ClocksinMellish} and the algorithm is proved sound and (restricted) complete. It can be considered to be a {\em theorem prover\/} in the following sense; given two processes $p$ and $q$ it will try to construct a bisimulation containing the pair $(p,q)$ (which equals a proof) if and only if $p$ is equivalent to $q$. If $p$ and $q$ are inequivalent this system will terminate with failure. Moreover, the program will only terminate if the processes $p$ and $q$ both have finite state-transition diagrams---this is the sense in which the algorithm is only restricted complete. One of the drawbacks of this system  is thus the lack of information of {\em why\/} processes are inequivalent. Later we will show how to remedy this inconvenience.
+
+The approach taken is quite straight forward and follows closely the recursive definition of bisimulation. Let
+\[
+\begin{array}{l@{\;\;\;}c@{\;\;\;}l}
+\left.\begin{array}{l}bisim\end{array}\right.    & \subseteq & Pr\times Pr\times 2^{Pr\times Pr}\\
+\\
+\left.\begin{array}{l}closure\\ matchl\\ matchr\end{array}\right\}
+         & \subseteq & Pr\times Pr\times 2^{Pr\times Pr}\times 2^{Pr\times Pr}\\
+\\
+\left.\begin{array}{l}matchl^{+}\\ matchr^{+}\end{array}\right\}
+         & \subseteq & Pr\times Pr\times 2^{Act\times Pr}\times 2^{Pr\times Pr}\times 2^{Pr\times Pr}\\
+\end{array}
+\]
+be the smallest relations closed under the rules given in figure~\ref{figInferenceSystemBisim}. The intended meaning of each of the six relations is informally:
+\begin{itemize}
+\item[$bisim$:] Given two processes $p$ and $q$ it will try to build a bisimulation containing $(p,q)$.
+
+\item[$closure$:] Given two processes $p$ and $q$ and an approximate bisimulation (see definition~\ref{defApproximateBisimulation}) $B$ containing $(p,q)$, $closure$ will try to extend $B$ to a genuine bisimulation $C$.
+
+\item[$matchl$:] Given two processes $p$ and $q$ and an approximate bisimulation $B$, $matchl$ will try to extend $B$ to an approximate bisimulation $C$ closed under ${\cal L}(={\cal S}$).
+
+\item[$matchr$:] Given two processes $p$ and $q$ and an approximate bisimulation $B$, $matchl$ will try to extend $B$ to an approximate bisimulation $C$ closed under ${\cal R}(=\overline{\cal S})$.
+
+\item[$matchl^{+}$:] Given two processes $p$ and $q$, an approximate bisimulation $B$ containing $(p,q)$, and a subset $M$ of $p$'s derivations such that $q$ only remains to match those of $p$'s derivations which still are in $M$. Then $matchl^{+}$ will try to extend $B$ to an approximate bisimulation $D$ closed under ${\cal L}$.
+
+\item[$matchr^{+}$:] Given two processes $p$ and $q$, an approximate bisimulation $B$ containing $(p,q)$, and a subset $N$ of $q$'s derivations such that $p$ only remains to match those of $q$'s derivations which still are in $N$. Then $matchr^{+}$ will try to extend $B$ to an approximate bisimulation $D$ closed under ${\cal R}$.
+
+\end{itemize}
+From the definition of $\cal L$ it follows that the approximate bisimulation $D$ constructed by $matchl^{+}$ must be such that for each derivation $p\der{a}p'$ of $p$, $q$ has a match within $D$, i.e.\@ $q\der{a}q'$ for some $q'$ and $(p',q')\in D$ (see figure~\ref{figMatchlpFirst} where $A = \{p'\}\times\{q'\mid q\der{a}q'\}$, $A_1=A\bigcap B$ and $A_2=A\setminus A_1$). If $p'$ can be matched by $q'$ such that $(p',q')\in B$ (i.e.\@ $A_1\not=\emptyset$ in figure~\ref{figMatchlpSecond}) then all is fine and we do not need to search for another matching $q$ derivation. If $q$ cannot match the derivation $(a,p')$ in $B$ (i.e.\@ $A_1=\emptyset$ in figure~\ref{figMatchlpSecond}), $B$ will be extended with a pair $(p',q')$ where $q\der{a}q'$ (see figure~\ref{figMatchlpThird} where the hatched area symbolizes the extension to $B$). Backtracking may be necessary at this point in order to replace the chosen $q'$ with another $a$-derivation of $q$, should it later be discovered that the chosen derivation is not a match for $p$. Obviously, $q$ will then have a match for $(a,p')$ in this extended set. Before dealing with the remaining derivations in $M$, however, the extended set$B\bigcup\{(p',q')\}$ has to be closed, i.e.\@ $(p',q')$ should be treated similarly etc.
+
+\begin{figure}
+\[
+\begin{array}{r@{\;\;}c@{\;\;\;\;}l}
+B & : & \myfrac{closure(p,q,\{(p,q)\},C)}{bisim(p,q,C)}\\
+\\
+
+C & : & \myfrac{matchl(p,q,B,C)\;\;\;matchr(p,q,C,D)}{closure(p,q,B,D)}\\
+\\
+
+ML& : & \myfrac{matchl^{+}(p,q,M,B,C)}{matchl(p,q,B,C)}\;\;\; ;\;\; M = \{(a,p')\mid p\der{a}p'\}\\
+\\
+
+MR& : & \myfrac{matchr^{+}(p,q,N,B,C)}{matchr(p,q,B,C)}\;\;\; ;\;\; N = \{(a,q')\mid q\der{a}q'\}\\
+\\
+
+ML^{+}& : & matchl^{+}(p,q,\emptyset,B,B)\\[.2cm]
+&&\myfrac{matchl^{+}(p,q,M,B,D)}{matchl^{+}(p,q,\{(a,p')\}\cup M,B,D)}\;\;\; ;\;\; q\der{a}q'\wedge (p',q')\in B\\[.4cm]
+&&\myfrac{closure(p',q',\{(p',q')\}\cup B,C)\;\;\; matchl^{+}(p,q,M,C,D)}{matchl^{+}(p,q,\{(a,p')\}\cup M,B,D)}\;\;\; ;\;\; q\der{a}q'\\
+\\
+
+MR^{+}& : & matchr^{+}(p,q,\emptyset,B,B)\\[0.2cm]
+&&\myfrac{matchr^{+}(p,q,N,B,D)}{matchl^{+}(p,q,\{(a,p')\}\cup N,B,D)}\;\;\; ;\;\; p\der{a}p'\wedge (p',q')\in B\\[0.4cm]
+&&\myfrac{closure(p',q',\{(p',q')\}\cup B,C)\;\;\; matchr^{+}(p,q,N,C,D)}{matchr^{+}(p,q,\{(a,q')\}\cup N,B,D)}\;\;\; ;\;\; p\der{a}p'\\
+\end{array}
+\]
+\caption{Inference system for construction of bisimulations.\label{figInferenceSystemBisim}}
+\end{figure}
+
+\begin{figure}
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(40.00,20.00){\oval(75,36)}
+\put(79.00,39.00){\makebox(0,0)[c]{\footnotesize $Pr\times Pr$}}
+
+\put(25.00,15.00){\oval(34,20)}
+\put(40.00,5.00){\makebox(0,0)[c]{\footnotesize B}}
+\put(19.00,7.00){\makebox(0,0)[c]{\footnotesize $\bullet\;(p,q)$}}
+\put(15.35,7.85){\vector(1,2){4.5}}
+
+\put(25.00,25.00){\oval(17,18)}
+\put(33.00,33.00){\makebox(0,0)[c]{\footnotesize A}}
+\put(24.00,30.00){\makebox(0,0)[c]{\footnotesize A$_2$}}
+\put(24.00,20.00){\makebox(0,0)[c]{\footnotesize A$_1$}}
+
+\end{picture}
+\caption{Sketch of $matchl^{+}$ situation.\label{figMatchlpFirst}}
+\end{figure}
+
+\begin{figure}
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(40.00,20.00){\oval(75,36)}
+\put(79.00,39.00){\makebox(0,0)[c]{\footnotesize $Pr\times Pr$}}
+
+\put(25.00,15.00){\oval(34,20)}
+\put(40.00,5.00){\makebox(0,0)[c]{\footnotesize B}}
+\put(19.00,7.00){\makebox(0,0)[c]{\footnotesize $\bullet\;(p,q)$}}
+\put(15.35,7.85){\vector(1,2){5.7}}
+
+\put(25.00,25.00){\oval(17,18)}
+\put(33.00,33.00){\makebox(0,0)[c]{\footnotesize A}}
+\put(26.50,20.00){\makebox(0,0)[c]{\footnotesize $\bullet\;(p',q')$}}
+
+\end{picture}
+\caption{$matchl^{+}$ situation when a match can be found in $B$.\label{figMatchlpSecond}}
+\end{figure}
+
+\begin{figure}
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(40.00,20.00){\oval(75,36)}
+\put(79.00,39.00){\makebox(0,0)[c]{\footnotesize $Pr\times Pr$}}
+
+\put(25.00,10.00){\oval(34,15)}
+\put(42.50,5.00){\makebox(0,0)[c]{\footnotesize B}}
+\put(19.00,7.00){\makebox(0,0)[c]{\footnotesize $\bullet\;(p,q)$}}
+\put(15.35,7.85){\vector(1,2){7.0}}
+\put(25.00,28.00){\oval(25,15)}
+\put(38.00,33.00){\makebox(0,0)[c]{\footnotesize A}}
+\put(28.20,23.20){\makebox(0,0)[c]{\footnotesize $\bullet\;\;(p',q')$}}
+
+% Area "protuberance"
+\put(22.50,24.00){\oval(2,2)[t]}
+\put(17.50,18.50){\oval(2,2)[br]}
+\put(27.30,18.50){\oval(2,2)[bl]}
+\put(18.55,18.50){\line(1,2){2.8}}
+\put(23.50,24.00){\line(1,-2){2.8}}
+
+% Hatching "protuberance"
+\multiput(19.00,18.20)(1.2,0){6}{\footnotesize .}
+\multiput(19.40,19.40)(1.2,0){5}{\footnotesize .}
+\multiput(20.00,20.60)(1.2,0){4}{\footnotesize .}
+\multiput(20.50,22.00)(1.2,0){3}{\footnotesize .}
+\multiput(21.10,23.20)(1.2,0){2}{\footnotesize .}
+\multiput(22.00,24.40)(1.2,0){1}{\footnotesize .}
+
+
+\end{picture}
+\caption{$matchl^{+}$ situation when no match can be found in $B$.\label{figMatchlpThird}}
+\end{figure}
+
+Similarly, all derivations $q\der{a}q'$ of $q$ must have a matching $p'$, such that $p\der{a}p'$ and $(p',q')\in D$ for the approximate bisimulation $D$ constructed by $matchr^{+}$ (see figures~\ref{figMatchlpFirst}, \ref{figMatchlpSecond}, and \ref{figMatchlpThird}).
+
+The system is sound in the sense that $C$ is a bisimulation containing the pair $(p,q)$ whenever $bisim(p,q,C)$ holds. It is useful to introduce some verification conditions, $Bis$, $Cl$, $Ml$, $Mr$, $Ml^{+}$, and $Mr^{+}$ (see figure~\ref{figVerCondA} and~\ref{figVerCondB}). The induction principle associated with the inference system, then implies we must show that these verification conditions are closed under the rules of the system (see~\cite{Aczel}). Then the following inclusions will hold:
+\[
+\begin{array}{l@{\;\;}c@{\;\;\subseteq\;\;\;\;\;}l@{\;\;\subseteq\;\;}l}
+bisim &  Bis & matchr &  Mr\\
+closure & Cl & matchl^{+} & Ml^{+}\\
+matchl  & Ml & matchr^{+} & Mr^{+}\\
+\end{array}
+\]
+\begin{figure}
+\[
+\begin{array}{lll}
+\multicolumn{3}{l}{Bis(p,q,C) \Leftrightarrow^{\Delta}}\\
+&&\left\{\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+(p,q)\in C\;\;\wedge\\
+C\subseteq{\cal B}(C)
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Cl(p,q,B,D) \Leftrightarrow^{\Delta}}\\
+&&\left\{(p,q)\in B\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+B\subseteq D\;\;\wedge\\
+D\setminus (B\setminus \{(p,q)\})\subseteq {\cal B}(D)
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Ml(p,q,B,C) \Leftrightarrow^{\Delta}}\\
+&&\left\{(p,q)\in B\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+B\subseteq C\;\;\wedge\\
+C\setminus B\subseteq {\cal B}(C)\;\;\wedge\\
+(p,q)\in{\cal L}(C)
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Mr(p,q,B,C) \Leftrightarrow^{\Delta}}\\
+&&\left\{(p,q)\in B\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+B\subseteq C\;\;\wedge\\
+C\setminus B\subseteq {\cal B}(C)\;\;\wedge\\
+(p,q)\in{\cal R}(C)
+\end{array}
+\right]\\
+\\
+
+
+\end{array}
+\]
+\caption{Verification conditions for minimal system.\label{figVerCondA}}
+\end{figure}
+
+\begin{figure}
+\[
+\begin{array}{lll}
+\multicolumn{3}{l}{Ml^{+}(p,q,M,B,D) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B\;\;\wedge\\
+M\subseteq \{(a,p')\mid p\der{a}p'\}\;\;\wedge\\
+(p_M,q)\in{\cal L}(B)
+\end{array}
+\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+B\subseteq D\;\;\wedge\\
+D\setminus B\subseteq {\cal B}(D)\;\;\wedge\\
+(p,q)\in{\cal L}(D)
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Mr^{+}(p,q,N,B,D) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B\;\;\wedge\\
+N\subseteq \{(a,q')\mid q\der{a}q'\}\;\;\wedge\\
+(p,q_N)\in{\cal R}(B)
+\end{array}
+\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+B\subseteq D\;\;\wedge\\
+D\setminus B\subseteq {\cal B}(D)\;\;\wedge\\
+(p,q)\in{\cal R}(D)
+\end{array}
+\right]\\
+\\
+&&\hbox{where } p_M=\sum \{a.p'\mid p\der{a}p'\;\wedge\; (a,p')\not\in M\}\;\; \hbox{($q_N$ similar)}\\
+
+
+
+\end{array}
+\]
+\caption{Verification conditions for minimal system (cont.).\label{figVerCondB}}
+\end{figure}
+due to the leastness of $bisim$, \ldots The soundness the follows directly (from $Bis$).
+
+The system is complete in the sense that whenever $p$ and $q$ are equivalent then $bisim(p,q,C)$ holds for some $C$. (Actually, the system is only restricted complete as there is a restriction on $p$ and $q$ in that they should have finite state-transition diagrams). The completeness is obtained as an easy corollary of the theorem displayed in figure~\ref{figCompletCond} proved by induction on $n$. (Notice that `ANT()' denotes the antecedent of the corresponding verification predicate and $\sharp_F$ is a size-function measuring the size of the input arguments---in these cases all arguments except for $C$).
+
+\begin{figure}
+\[
+\begin{array}{ll}
+\left[\begin{array}{l}Bis(p,q,C)\;\wedge\\ \sharp_{Bis}(p,q,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: bisim(p,q,C')\\
+\\
+
+\left[\begin{array}{l}ANT(Cl(p,q,B,C))\;\wedge\\ Cl(p,q,B,C)\;\wedge\\ \sharp_{Cl}(p,q,B,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: closure(p,q,B,C')\\
+\\
+
+\left[\begin{array}{l}ANT(Ml(p,q,B,C))\;\wedge\\ Ml(p,q,B,C)\;\wedge\\ \sharp_{Ml}(p,q,B,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: matchl(p,q,B,C')\\
+\\
+
+\left[\begin{array}{l}ANT(Mr(p,q,B,C))\;\wedge\\ Mr(p,q,B,C)\;\wedge\\ \sharp_{Mr}(p,q,B,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: matchr(p,q,B,C')\\
+\\
+
+\left[\begin{array}{l}ANT(Ml^{+}(p,q,M,B,C))\;\wedge\\ Ml^{+}(p,q,M,B,C)\;\wedge\\ \sharp_{Ml^{+}}(p,q,M,B,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: matchl^{+}(p,q,M,B,C')\\
+\\
+
+\left[\begin{array}{l}ANT(Mr^{+}(p,q,N,B,C))\;\wedge\\ Mr^{+}(p,q,N,B,C)\;\wedge\\ \sharp_{Mr^{+}}(p,q,N,B,C)\leq n\end{array}\right] \Rightarrow
+& \exists C'\subseteq C: matchr^{+}(p,q,N,B,C')\\
+\\
+
+\end{array}
+\]
+\caption{Completeness conditions for minimal system.\label{figCompletCond}}
+\end{figure}
+
+The fact that the system is developed and verified only for finding strong bisimulations is by no means a restriction as the only difference between strong bisimulations and other types of bisimulations (e.g.\@ weak bisimulation) is the derivation relations used. Thus, the system is easily modified in order to cope with other notions of bisimulations; the modification needed is merely a matter of redefining the derivation relation.
+
+Another nice thing about this system is the (almost) one-to-one correspondence between the inference rules and the PROLOG implementation (see appendix~\ref{appMinimalPROLOG}).
+
+The lack of use of modal expressions for reasoning about inequality of processes will be dealt with in the following section.
+
+
+\section{Initial proposal for enhancing the `minimal' system}\label{secProposalEnhance}
+
+We will now sketch a possible way of including modal expressions for use as an argument of inequality in the minimal system.
+
+Intuitively, we will essentially introduce two inference rules in addition to the ones given in figure~\ref{figInferenceSystemBisim}. These new rules will act as `catch all' rules i.e.\@ whenever $matchl^{+}$ or $matchr^{+}$ otherwise would fail the new rules will take over and make a note---construct a modal expression---describing {\em what\/} is separating the two proesses under consideration before failing.
+
+\begin{figure}\label{figSketchMatchlp}
+\begin{center}
+\unitlength=1.000mm
+\begin{picture}(90.00,35.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,31.00)[cc]{}}
+\put(20.50,21.70){\makebox(0,0)[cc]{$p$}}
+\put(20.00,20.00){\vector(-1,-2){6}}
+\put(15.00,14.00){\makebox(0,0)[cc]{$a$}}
+\put(14.50,6.50){\makebox(0,0)[cc]{$p'$}}
+
+\put(61.50,21.70){\makebox(0,0)[cc]{$q$}}
+\put(60.00,20.00){\vector(-1,-2){6}}
+\put(55.50,14.00){\makebox(0,0)[cc]{$a$}}
+\put(61.10,20.00){\vector(-1,-4){3}}
+\put(61.00,14.00){\makebox(0,0)[cc]{$a$}}
+\put(62.50,11.00){\makebox(0,0)[cc]{\ldots}}
+\put(62.00,20.00){\vector(1,-2){6}}
+\put(67.00,14.00){\makebox(0,0)[cc]{$a$}}
+\put(52.00,6.50){\makebox(0,0)[cc]{$q'_1$}}
+\put(56.50,6.50){\makebox(0,0)[cc]{$q'_2$}}
+
+\put(68.00,6.50){\makebox(0,0)[cc]{$q'_n$}}
+
+\end{picture}
+\end{center}
+\caption{Sketch of $matchl^{+}$-situation.}
+
+\end{figure}
+An expression arguing for the inequality of $p$ and $q$ is constructed as follows (for $matchl^{+}$); let $p\der{a}p'$ and $\{q'_1,\ldots,q'_n\} = \{q': q\der{a}q'\}$ (see figure~\ref{figSketchMatchlp}). $matchl^{+}$ must now try to find a match $q'_i$ for $p'$ of $q$. If this is possible all is well and $matchl^{+}$ has succeeded. However, if no matching $q'_i$ can be found (i.e.\@ $p\not\sim q$) we know that $\forall i\leq n:p'\not\sim q'_i$ and according to theorem~\ref{theoModalCharacterization} we have $M(p')\not= M(q'_i)$ i.e.\@ we can find $\forall i\leq n:p'\models F_i \wedge q'_i\not\models F_i$. Now, construct an expression $F'$ from all $F_i$'s as:
+\[
+F' = \bigwedge\{F_1,\ldots,F_n\}
+\]
+then $p'\models F'$ as $\forall i\leq n:p'\models F_i$ and $\forall i\leq n:q'_i\not\models F'$ because $\forall i\leq n: q'_i\not\models F_i$. The modal expression, $F$, explaining the inequality of $p$ and $q$ can then be defined as
+\[
+F=\can{a}F'
+\]
+i.e.\@ $p\models F$ but $q\not\models F$. Similarly, an expression, $F$, can be constructed in the $matchr^{+}$-case, so that whenever $p\not\sim q$ we have $p\models F$ and $q\not\models F$ where
+\[
+F = \may{a}\bigvee\{F_1,\ldots,F_n\}
+\]
+In case one of the processes $p$ and $q$ has no $a$-derivation, then $n=0$ and we therefore define $F_0$ to be $\dtt$ in the $matchl^{+}$-case and $\dff$ in the $matchr^{+}$-case which clearly will satisfy the above requirement.
+
+In the PROLOG-implementation we can at run-time make notes by extending the database with (Horn-)caluses of the form `noteq$(p,p,F)$' saying that $p$ and $q$ are inequivalent because $p$ enjoys the property $F$ which $q$ does not enjoy when $matchl^{+}$ of $matchr^{+}$ fails. However, we have to convince outselves that the principle is sound, i.e.\@ is it correct to make these `noteq' assumptions? An informal plausability argument for this may be given by looking at the verification conditions used in~\cite{Larsen} to prove the soundness and restricted completeness of the minimal system (see figures~\ref{figVerCondA}, \ref{figVerCondB}, and~\ref{figCompletCond}).
+
+Assume that $matchl$ fails. From figure~\ref{figCompletCond} it follows that no matter which $C$ we choose the verification predicate $Ml$ must be false as the antecedent of $Ml$ is guaranteed to hold is the 'calling-sequence' implied by the inference rule set is not violated, and $\sharp_{Ml}$ does not depend on $C$. Then $Ml$ will be false if the conjunction
+\[
+\left[\begin{array}{l}
+B\subseteq C\;\;\wedge\\
+C\setminus B\subseteq {\cal B}(C)\;\;\wedge\\
+(p,q)\in {\cal L}(C)
+\end{array}\right]
+\]
+is false for any $C$ (refer to figure~\ref{figVerCondA}. This can alternatively be expressed as
+\begin{equation}\label{eqThreeTwo}
+\forall C: B\subseteq C\; \wedge\; C\setminus B\subseteq {\cal B}(C)\;\Rightarrow\; (p,q)\not\in{\cal L}(C)
+\end{equation}
+Now, for the soundness of this method, we want to argue that whenever equation~\ref{eqThreeTwo} holds, then $p\not\sim q$. Suppose $p\sim q$. We will try to establish a contradiction. Notice that $\sim\subseteq{\cal L}(\sim)$ and $(p,q)\in{\cal L}(\sim)$. Let $C=\sim\cup B$. Then
+\[
+B\subseteq C
+\]
+and
+\[
+C\setminus B = \sim \setminus B\subseteq {\cal B}(\sim)\subseteq {\cal B}(\sim \cup B) = {\cal B}(C)
+\]
+due to the monotony of $\cal B$. However,
+\[
+(p,q)\in {\cal B}(\sim) \subseteq {\cal L}(\sim) \subseteq {\cal L}(\sim\cup B) = {\cal L}(C)
+\]
+due to the monotony of $\cal L$. But this is in conflict with equation~\ref{eqThreeTwo} which is supposed to hold for any $C$. Thus we can conclude that whenever $matchl$ fails it is safe and correct to conclude $p\not\sim q$. Similarly, it is safe and correct to conclude that $p\not\sim q$ whenever $matchr$ fails.
+
+Thus, we now know that the inclusion of the two catch-all rules in the inference rule set, making `noteq' assumptions, yields safe and correct assumptions concerning inequivalence of processes. However, this method makes (heavily) use of side-effects (the `noteq' clauses) which makes it very hard to prove rigorously the soundness and completeness of this extended system (we simply does not know of any suitable proof technique for such selfmodifying PROLOG programs). In the next chapter we will therefore, prove properly and rigogously the soundness and completeness of a similar system which avoids the side-effect pitfall.
+
+% end of chapter
+

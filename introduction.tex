@@ -1,0 +1,90 @@
+% Chapter 1: Introduction
+
+\chapter{Introduction}\label{chapIntroduction}
+
+In the last 10--15 years much effort has been made in order to provide ways of formalizing the semantics of systems. A formal semantics provides us with three things. Firstly, a yardstick with which to compare different implementations of a language; secondly, a framework for formal proofs of correctness of individual programs; and thirdly, the basis of a method for automatically generating implementations (e.g.\@ Ph.~D.\@ Lawrence Paulsons's system \cite{Paulson}).
+
+Of cause, there are several alternative approaches to formal semantics. There are mainly three alternatives; Axiomatic Semantics, Operational Semantics, and Denotational Semantics. The axiomatic approach deals with relating predicates which are true before execution to predicates being true afterwards for each type of construct. This is an elegant basis for program correctness proofs of individual programs in imperative languages. An operational semantics specifies the language by defining an interpreter for the abstract syntax of the language, i.e.\@ this approach gives good pointers for methods of implementation, however, program proving implies a total execution of the program `by hand.' The denotational semantics defines what each grammatical unit denotes in some well-defines mathematical model. Programs are normally modeled as computable functions from the domain of input values to the domain of output values. Also, the meaning of a particular syntactic construct is defined in terms of the meanings of its immediate sub-components \cite{Gordon}.
+
+A major goal of system design and implementation is to achieve semantic theories which support modular design and verification of systems. It should be possible given the specification of components to deduce whether the components in a particular context will implement (satisfy) some overall specification.
+
+Denotational semantics supports the requirement of program development and verification. However, for concurrent systems this semantic theory is inadequate. A concurrent system can have many interesting properties which cannot be described by an input--output function semantics (e.g.\@ deadlock). Also, the purpose of a concurrent system may be entirely different from that of computing a function (e.g.\@ a non-terminating program, such as an operation system,, is normally considered a useful system). Even if we only consider input--output function behaviour of concurrent systems, the requirement of modularity would fail to hold; there is no way of predicting the input--output behaviour of its sub-components \cite{Larsen}\cite{Milner}. So, in order to determine the systems overall behaviour,  it seems that further information about possible intermediate states of the components is needed.
+
+\cite{MilneMilner} solved the problem for a Calculus of Communicating Systems by choosing an operational semantics. Based on this operational semantics several equivalences between non-deterministic and concurrent processes have been proposed in order to capture different notions of the properties of a process. The proposed equivalences are useful in the design and verification of concurrent systems as each equivalence provide a notion of correctness of an implementation, {\sl IMP}, with respect to some specification, {\sl SPEC}; providing the correctness of {\sl IMP\/} simply consists of proving the equivalence, {\sl SPEC $\equiv$ IMP\/} (where $\equiv$ is the equivalence under consideration).
+
+In general, though, the implementation, {\sl IMP\/}, is derived through successive refinements, {\sl IMP$_{k}$}, of the specification, {\sl SPEC\/} (stepwise refinement). Thus, in order to guarantee {\sl SPEC $\equiv$ IMP}, each refinement, {\sl IMP$_{k}$\/} (where {\sl IMP$_{m+1}$\/} is increasingly more refined than {\sl IMP$_{m}$}, {\sl IMP$_{0}$ = SPEC\/} and {\sl IMP$_{n}$ = IMP\/}), must be proved to be equivalent to its predecessor, {\sl IMP$_{k-1}$\/} 
+(see figure~\ref{figRefinement}).
+For each {\sl IMP$_{k}$}, the refinement consists of a small refinement of {\sl IMP$_{k-1}$\/} (see figure~\ref{figRefinementPart}), where some small part $p$ is replaced by a more concrete device $q$, keeping the rest of the system unaffected. In order to complete the refinement step we must prove that $\hbox{\sl IMP}_{k-1}\equiv\hbox{\sl IMP}_{k}$. The direct approach to this involves proving the equivalence by the definition of the equivalence function. However, this will in general cause us not only to prove the equivalence of $p$ and $q$ but actually prove the equivalence of {\sl IMP$_{k-1}$\/} and {\sl IMP$_{k}$\/} of which $p$ and $q$ are just (very) small parts. This approach seems to give us more work than we are willing to perform.
+\begin{figure}[h]
+%%
+\unitlength=1.000mm
+\begin{picture}(115.00,55.00)
+\tt\put(7.00,32.00){\framebox(11.00,6.00)[cc]{SPEC}}
+\tt\put(24.00,20.00){\framebox(11.00,6.00)[cc]{}}
+\tt\put(42.00,10.00){\framebox(11.00,6.00)[cc]{}}
+\tt\put(99.00,32.00){\framebox(11.00,6.00)[cc]{IMP}}
+\multiput(19,29)(0.0,-0.6){3}{\line(1,0){4}}
+\multiput(36.00,17.00)(0.0,-0.6){3}{\line(1,0){4}}
+\multiput(55,13.5)(0.0,-0.6){3}{\line(1,0){4}}
+\multiput(94,29)(0.0,-0.6){3}{\line(1,0){4}}
+\tt\put(56.00,39.00){\makebox(0,0)[cc]{?}}
+\multiput(54,36)(0.0,-0.6){3}{\line(1,0){4}}
+\rm\put(2.00,2.00){\framebox(113.00,41.00)[cc]{}}
+\put(63.00,13.00){\circle*{1.0}}
+\put(70.00,15.00){\circle*{1.0}}
+\put(77.00,18.00){\circle*{1.0}}
+\put(84.00,22.00){\circle*{1.0}}
+\put(91.00,26.00){\circle*{1.0}}
+\end{picture}
+%%
+\caption{Stepwise refinement}
+\label{figRefinement}
+\end{figure}
+%
+\begin{figure}[h]
+%%
+\unitlength=1.000mm
+\begin{picture}(115.00,55.00)
+\rm\put(2.00,2.00){\framebox(113.00,41.00)[cc]{}}
+\tt\put(13.00,12.00){\framebox(31.00,20.00)[tl]{\rule{0pt}{1em}\rule{4pt}{0pt}IMP$_{k-1}$}}
+\tt\put(73.00,12.00){\framebox(31.00,20.00)[tl]{\rule{0pt}{1em}\rule{4pt}{0pt}IMP$_k$}}
+\multiput(56,22)(0.0,-0.6){3}{\line(1,0){4}}
+\put(94.00,17.00){\circle{7}}
+\put(94.00,17.00){\makebox(0,0)[cc]{$q$}}
+\put(30.00,13.00){\dashbox(10,9)[cc]{$p$}}
+\end{picture}
+%%
+\caption{Single refinement step}
+\label{figRefinementPart}
+\end{figure}
+
+Alternatively, though, by ensuring that the equivalence in question in fact is a congruence with respect to the various process construction operators, it will be sufficient to show $p\equiv q$ in order to establish $\hbox{\sl IMP}_{k-1}\equiv\hbox{\sl IMP}_{k}$. Unfortunately, experiences with correctness proofs in the framework of Calculus of Communicating Systems have shown that the congruence approach also leads to unnecessarily long and complicated proofs when they succeed \cite{Prasad}.
+
+Through the study of examples it has become clear that computer assistance is essential; not just to ensure the correctness of the proof but even to make the analyses feasible. In January 1986 the Laboratory of Foundations of Computer Science was founded in Edinburgh. The laboratory will be engaged in developing systems for computer assisted formal reasoning in general, including a wide collection of computer based tools for design and verification of concurrent systems \cite{Larsen}. In relation to this project a PROLOG.system for deciding bisimulation equivalence of CCS-processes was developed and implemented as one of many results of \cite{Larsen}. A similar system, developed by K.~V.~S.~Prasad, differs from the one of \cite{Larsen} in that, it will check whether a (by the user) given binary relation on processes constitutes a bisimulation.
+
+Unfortunately, these systems have the drawback of being absolutely uninformative in case the processes under consideration are inequivalent. We want to add such information. Often, when knowing the reason {\it why\/} something acts strangely, it is easy to find a `cure' that will prevent the situations occurring in the future. For example, most programs never do what they are intended to do in the first try. There will always be some situations not catered for. An argument of {\it why\/} this situation actually occurred would be of great help in the debugging of the program. Of course, we will not accept all sorts of arguments; the arguments should be of a certain `quality,' that is:
+
+\begin{enumerate}
+\item arguments must be correct
+\item arguments most be concise in the sense that an argument must not contain redundant or irrelevant information
+\end{enumerate}
+
+\noindent
+Clearly, the first requirement is vital. The other requirement is also of great importance if the arguments given should be taken seriously e.g.\@ it is of little use to know that Aalborg is a city of Denmark if you are trying to determine why your coffee machine is malfunctioning. Also, you will not be any happier knowing that the heating element is not heating, that the light on the machine is not lit etc.\@ when you already know that you forgot to insert the plug into the power outlet.
+
+This thesis will mainly be concerned with the construction and verification of a system for finding {\it bisimulations of CCS-processes}. The system will be based upon the same principles as the PROLOG-system in \cite{Larsen}, but in addition to being a theorem prover, our system will also be able to give an explanation when two processes are not equivalent. The explanation given is a {\it modal property\/} which only one of the processes enjoys. The constructed system will be implemented in PROLOG and its usefulness will be demonstrated through several examples. Moreover, a notion of {\it extended bisimulation\/} will be presented (and implemented) resulting in more informative proofs (bisimulations) being generated by the system and thereby improving the overall usefulness of the system.
+
+In order to reach these goals we will first have to study some of the theory behind CCS and verification of CCS-processes. More specifically, in chapter~\ref{chapBasic}, we will give a short review of the basic theory behind CCS supplemented with results of the related theory of labeled transition systems. In doing so, we will introduce the notions of simulation and bisimulation as means of abstracting the operational behaviour of a process, and as an elegant proof technique for proving the equivalence of processes. Also, a modal characterization of processes identifying the processes with the properties they enjoy will be reviewed.
+
+In chapter~\ref{chapExisting}, the principles of two existing systems will be presented --- each taking a different approach towards proving (or disproving) bisimulations equivalence. The first system, a result of a master thesis work \cite{VestmarOlesen}, tries to find a `maximal' bisimulation using an application of generalized partitioning problem. The second system \cite{Larsen}, in contrast, tries to find a `minimal' bisimulation using a principle strongly connected to the definition of bisimulation. Our system will be based on the same principles as this system.
+
+Then, in chapter~\ref{chapAnew}, we present our own system for reasoning about the equivalence {\it and inequivalence\/} of processes. We will prove soundness and (restricted) completeness of the system.
+
+Furthermore, in chapter~\ref{chapProlog}, we will demonstrate the usefulness of the system through some examples. The extension of the system in order to make it find {\it weak\/} bisimulations is briefly discussed and this (much more interesting) system is demonstrated through several examples.
+
+Finally, in chapter~\ref{chapExtended}, the notion of {\it extended\/} bisimulations is presented in order to make the theorem proving part of the system more useful. A new extended system for arguing for extended bisimulation equivalence and inequivalence is constructed and implemented. The usefulness of this improved system is demonstrated through some examples.
+
+%end of chapter
+
+
+

@@ -1,0 +1,701 @@
+% chapter : Basic theory
+
+\chapter{Basic theory}\label{chapBasic}
+
+\section{CCS}
+
+CSS, which is short for Calculus of Communicating Systems, originate from the work of Robin Milner \cite{Milner}. CCS can be considered as based upon the traditional theory of finite automata. In CCS, however, the external behaviour of a process is considered more important than the internal behaviour. In fact, in CCS one wants to make an abstraction from the internal behaviour.
+
+The calculus is founded on two central ideas, The first being {\it observation\/} and the other {\it synchronized communication}. The aim is to describe a concurrent system fully enough to determine exactly what behaviour will be seen or experienced by an external observer i.e.\@ two systems are indistinguisable if we cannot tell them apart without pulling them apart. (Later on the formal definition of {\it observational equivalence\/} and some of its properties will be stated).
+
+This, however, does not prevent us ffrom studying the structure of systems and as every interesting concurrent system is built from independent agents (programs/processes) which communicate, this leads us to synchronized communication. Communication between two agents is regarded as ana indivisable action of the composit system in CCS and the central operation of the algebra of systems is {\it concurrent composition}, a binary operation which compose two independent agents, allowing them to communicate.
+Note, when we compose two agents it is synchronization of their mutual communication which determines the composite; we treat their independent actions as occuring in arbitrary order but {\it not\/} simultaneously.
+
+These two ideas can in fact be unified as on one hand the only way to observe a system is to communicate with it, which makes the observer and system together a larger system. On the other hand, to place two components in communication (i.e.\@ to compose them) is just to let them obseve each other. If observing and communicating are the same, it follows that one cannot observe a system without its participation.
+
+Since a program or a system in CCS is just a term of the calculus, the structure of the program or system (its {\it intension\/}) is reflected in the structure of the term. We will now turn to the syntax and operational semantics of terms in CCS.
+
+
+\subsection{Syntax and operational semantics}
+
+In this section the syntax and operational semantics of CCS-terms (henceforth called agnts, CCS-processes or processes for short) in terms of a labelled transition system \cite{Plotkin} will be introduced formally. We will restrict this presentation to a subset of CCS as this suffices for our purposes. A full treatment of CCS can be found in \cite{Milner}.
+
+The system of CCS-processes is closed under {\it action prefixing\/} and {\it binary summation}. Apart from this, CCS-processes are built from a number of operations, namely the {\it parallel operator}, the {\it restriction operator}, and the {\it renaming operator}.
+
+The {\it parallel operator}, $\mid$, represents the parallel composition of two processes, enabeling communication to occur between them. Furthermore, the parallel operator also allows the processes behaviours to interleave freely.
+
+Together with the $\mid$-operator a structure on the {\it action set Act\/} is introduced; it is assumed that {\it Act\/} is the disjoint union of these sets $\Delta$, $\overline{\Delta}$ and $\{\tau\}$. $\Delta$ is a (fixed) set of {\it names\/} and $\overline{\Delta}$ is a set of {\it co-names\/}, disjoint from $\Delta$ and in bijection with it, the bijection being
+\begin{equation}
+\overline{\rule{0cm}{.8em}\ \ } : \Delta \mapsto \overline{\Delta}
+\end{equation}
+and $\overline{\alpha}$ is the co-name of $\alpha$, and the inverse bijection is $\overline{\overline{\alpha}} = \alpha$. $\alpha\in\Delta$ ($\overline{\alpha}\in\overline{\Delta}$) is also called the {\it complementary action\/} of $\overline{\alpha}\in\overline{\Delta}$ ($\alpha\in\Delta$).
+
+Communication between two processes in parallel may then take place if they can perform complementary actions. As a result of the communication the combined system will perform a $\tau$-action (often called an `invisible', `silent', or `internal' action). $\tau$-actions are also used to model nondeterministic bahaviour of agents.
+
+The second sort of operator was the {\it restriction operator}, $\setminus S$ where $S\subseteq\Delta$, which restricts a process' actions not to include actions belonging to the set $S\cup\overline{S}$. The restriction operator is useful for ensuring that certain communications of processes composed by the $\mid$-operator occur internally.
+
+The third sort op operator was the {\it renaming operator}, $[N]$, where
+\begin{equation}
+N : \Delta\cup\overline{\Delta}\mapsto\Delta\cup\overline{\Delta},
+\end{equation}
+and $N$ is assumed to be a bijection, to respect complements, and to preserve $\tau$.
+
+By using the above mentioned operators it is possible to define processes with quite complex behaviours, however, the behaviours will in all cases be finite. In order to obtain infinite behaviour, a form of recursion of processes is needed. This is introduced by the notion of behaviour/process identifiers. We presuppose a set, $Ident$, of {\it process identifiers}. Each process identifier, $X$, is defined by a (possibly recursive) rule. This is denoted by a declaration, $D$, being a mapping
+\[
+D: Ident\mapsto CCS_{Ident}
+\]
+We write $X:=: p_X$ to indicate that $p_X = D(X)$, whenever $D$ is implicitly given. We are now able to introduce the syntax of CCS-processes and it is given in figure~\ref{figCCSproc}.
+
+\begin{figure}
+\[
+\begin{array}{lr@{\:\mid\extracolsep{1cm}}l}
+p::= & NIL          & inaction \\
+     &   X          & recursion \\
+     & \alpha.p     & prefixing \\
+     & p + p'       & summation \\
+     & p\mid p'     & parallel \\
+     & p\!\setminus S & restriction \\
+     & p[N]         & renaming \\
+\\
+\multicolumn{3}{l}{where\ X\in Ident}
+\end{array}
+\]
+\caption{Syntax of CCS-processes.}\label{figCCSproc}
+\end{figure}
+
+In order to obtain an {\it image-finite\/} process system (see corollary~\ref{corImageFinite}) a syntactic restriction is imposed on $X :=: p_X$, namely that $X$ should be guarded in $p_X$ i.e.\@ every occurence of $X$ in $p_X$ is within some subexpression $\alpha.p'$ of $p_X$, where $\alpha\in Act$.
+
+We define the process system $\hbox{\bf P}$ as the (labelled) transition system $\hbox{\bf P} = (Pr, Act, \rel{})$, where $\rel{}$ is the smallest relation on $Pr\times Act\times Pr$ satisfying the rules in figure~\ref{figOpSemantics}.
+
+\begin{definition}
+Let $\cal R$ be a binary relation over the set S. Then $\cal R$ is image-finite iff for each element $s\in S$ the set
+\[
+\{t\mid s{\cal R}t\}
+\]
+is finite.
+\qed
+\end{definition}
+
+\begin{definition}
+A labelled transition system, $\hbox{\bf S} = (S, A, \longrightarrow)$, is image-finite iff for all elements $a\in A$ the set
+\[
+\rel{a} = \{(s,t)\in S\times S\mid s\rel{a}t\}
+\]
+is image-finite.
+\qed
+\end{definition}
+
+\noindent
+We are now able to state the following proposition.
+
+\begin{proposition}\label{propCCSfinite}
+For all CCS process expressions, $p$, the set
+\[
+\{(\alpha,p')\mid p\rel{\alpha}p'\}
+\]
+is finite.
+\proof See~\cite{Larsen}.
+\qed
+\end{proposition}
+
+\begin{corollary}\label{corImageFinite}
+The process system {\bf P} (over CCS-processes) is image-finite, or equivalently
+\[
+\forall\alpha\in Act:\; \rel{\alpha} = \{(p,q)\mid p\rel{\alpha}q\}
+\]
+is image-finite.
+\qed
+\end{corollary}
+
+\begin{definition}
+A set $S\subseteq Pr$ is $\rel{}$-closed if and only if
+\[
+\forall\alpha\in Act: p\in S \;\wedge\; p\rel{\alpha}p' \Rightarrow p'\in S
+\]
+\qed
+\end{definition}
+
+\begin{figure}
+\[
+\begin{array}{lll}
+Action      & \alpha.p\rel{\alpha}p' &\\
+\\
+\\
+Sum         & \myfrac{p_1\rel{\alpha}p'}{p_1+p_2\;\rel{\alpha}\;p'}
+            & \myfrac{p_2\rel{\alpha}p'}{p_1+p_2\;\rel{\alpha}\;p'}\\
+\\
+\\
+Parallel    & \myfrac{p_1\rel{\alpha}p'_1}{p_1\mid p_2\;\rel{\alpha}\;p'_1\mid p_2}
+            & \myfrac{p_2\rel{\alpha}p'_2}{p_1\mid p_2\;\rel{\alpha}\;p_1\mid p'_2}\\
+\\
+            & \myfrac{p_1\rel{\alpha}p'_1\;\;\;\;\;p_2\rel{\overline{\alpha}}p'_2}
+                     {p_1\mid p_2\;\rel{\tau}\;p'_1\mid p'_2}\\
+\\
+\\
+Restriction & \myfrac{p\rel{\alpha}p'}{p\!\setminus S\rel{\alpha}p'\!\setminus S}\;\;\;;\;\alpha\not\in S\cup\overline{S}\\
+\\
+\\
+Renaming    & \myfrac{p\rel{\alpha}p'}{p[N]\rel{N\alpha}p'[N]}\\
+\\
+\\
+Recursion   & \myfrac{p_X\rel{\alpha}p}{X\rel{\alpha}p}\;\;\;\;;\; X:=: p_X.\\
+\\
+\end{array}
+\]
+\caption{Operational semantics for CCS.}\label{figOpSemantics}
+\end{figure}
+
+
+\begin{definition}
+Let $\hbox{\bf P} = (Pr,Act,\rel{})$ be a process system and let $Q$ be a $\rel{}$-closed subset of $Pr$ then the restricted process system, $\hbox{\bf P}\downarrow Q$, is defined as
+\[
+\hbox{\bf P}\downarrow Q = (Q,Act_Q,\rel{}_Q)
+\]
+where
+\[
+\begin{array}{r@{\;=\;}l}
+Act_Q    & \{\alpha\in Act\mid\exists q\in Q: q\rel{\alpha}\}\;\;\; \hbox{\sl and}\\
+\rel{}_Q & \rel{} \cap(Q\times Act_Q \times Q)\\
+         & \rel{} \cap(Q\times Act \times Q)\\
+\end{array}
+\]
+\qed
+\end{definition}
+
+Having defined the syntax and the operational semantics of CCS-processes it will be interesting to be able to determine whether or not two processes show the same behaviour---they posesses the same derivations.
+
+
+\section{Simulation, bisimulation, and equivalences}
+
+In the following we present the general notion of {\it simulation\/} and {\it bisimulation\/} as means of abstracting the operational behaviour of a process, and we shall state some of their properties. Bisimulation yields an elegant proof technique for proving equivalence of processes which is superior to the traditional techniques. traditionally, equivalence is proved by algebraic laws. However, from the point of view os automating it turns out that the notion of bisimulation yields much more efficiency. The following presentation is strongly inspired by \cite{Larsen}.
+
+As apparent from the previous section, processes and their operational behaviour are modeled by labelled transition systems. Let $\hbox{\bf P} = ( 
+Pr, Act, \rel{})$ be such a system. We shall alternatively refer to the transition relation, $\rel{}$, of {\bf P} as the {\it derivation relation}. Let $p$ and $q$ be two processes of {\bf P}. We then say that $q$ simulates $p$ or $p$ {\it is simulated by\/} $q$, if every derivation of $p$ can be matched by a derivation of $q$ in such a way that the simulation property is maintained. Formally this is
+
+\begin{definition}[Simulation]\label{defSimulation}
+A simulation $\cal R$ is a binary relation on \hbox{\bf P} such that whenever $p{\cal R}q$ and $\alpha\in Act$ then
+\begin{equation}
+p\rel{\alpha}p' \rightarrow \exists q': q\rel{\alpha}q' \wedge p'{\cal R}q'
+\label{eqSimulation}
+\end{equation}
+A process $q$ is said to {\em simulate\/} a process $p$ if and only if there exists a simulation $\cal R$ with $p{\cal R}q$. In this case we write $p\preceq q$.
+\qed
+\end{definition}
+
+\noindent
+Now, for ${\cal R}\subseteq Pr^2$ we can define ${\cal S(R)}\subseteq Pr^2$ as
+\begin{equation}
+{\cal S(R)} = \{(p,q)\in Pr^2\mid\forall\alpha\in Act : p\;\;\hbox{and}\;\; q\;\;\hbox{satisfies equation~\ref{eqSimulation}}\}
+\end{equation}
+
+\noindent
+With this definition in mind the following properties can be stated:
+
+\begin{proposition}
+${\cal R}\subseteq Pr^2$ is a simulation iff ${\cal R}\subseteq {\cal S(R)}$.
+\label{propSim}\qed
+\end{proposition}
+
+\begin{proposition}
+${\cal S}$ is a monotonic endofunction on the complete lattice of binary relations (over $Pr$) under inclusion.
+\label{propMonotonic}\qed
+\end{proposition}
+
+\noindent
+Using the standard fixed-point result, originally due to Tarski, this implies:
+
+\begin{proposition}
+${\cal S}$ has a maximal fixed-point given by
+\[
+\bigcup\{{\cal R}\mid {\cal R}\subseteq{\cal S(R)}\}.
+\]
+Moreover $\preceq$ equals this fixed-point.
+\qed
+\end{proposition}
+
+\begin{proposition}
+$\preceq$ is a preorder on $Pr^2$.
+\proof see~\cite{Larsen}.
+\qed
+\end{proposition}
+
+It should be noted, that definition~\ref{defSimulation} of simulation ordering admits an elegant proof technique: to show that $p\preceq q$ it is sufficient and necessary to find a simulation containing $(p,q)$.
+
+\begin{example}
+Let {\bf P} be given by the diagram below:
+
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(21.00,40.00){\makebox(0,0)[cc]{$p_0$}}
+\put(20.00,38.00){\vector(-1,-2){6}}
+\put(15.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(22.00,38.00){\vector(1,-2){6}}
+\put(27.00,33.00){\makebox(0,0)[cc]{$a$}}
+
+\put(15.00,24.50){\makebox(0,0)[cc]{$p_1$}}
+\put(14.50,23.00){\vector(0,-1){15}}
+\put(13.00,16.50){\makebox(0,0)[cc]{$b$}}
+\put(15.00,6.50){\makebox(0,0)[cc]{$p_3$}}
+
+\put(28.00,24.50){\makebox(0,0)[cc]{$p_2$}}
+\put(27.50,23.00){\vector(0,-1){15}}
+\put(29.00,16.50){\makebox(0,0)[cc]{$c$}}
+\put(28.00,6.50){\makebox(0,0)[cc]{$p_4$}}
+
+\put(62.00,40.00){\makebox(0,0)[cc]{$q_0$}}
+\put(61.50,38.00){\vector(0,-1){15}}
+\put(63.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(61.50,21.70){\makebox(0,0)[cc]{$q_1$}}
+\put(60.00,20.00){\vector(-1,-2){6}}
+\put(55.00,14.00){\makebox(0,0)[cc]{$b$}}
+\put(63.00,20.00){\vector(1,-2){6}}
+\put(68.00,14.00){\makebox(0,0)[cc]{$c$}}
+\put(52.00,6.50){\makebox(0,0)[cc]{$q_2$}}
+\put(71.00,6.50){\makebox(0,0)[cc]{$q_3$}}
+\end{picture}
+
+\noindent
+Then ${\cal R} = \{(p_0,q_0),(p_1,q_1),(p_2,q_1),(p_3,q_2),(p_4,q_3)\}$ is a simulation. Thus, $p_0\preceq q_0$. However, $q_0\not\preceq p_0$, because assume that $\cal R$ is a simulation containing $(q_0,p_0)$, then either $(q_1,p_1)$ or $(q_1,p_2)$ must be in $\cal R$. But in the former case $q_1\rel{c}$ but $p_1\not\rel{c}$ so if ${\cal R}$ is to be a simulation then $(p_1,p_1)\not\in \cal R$. Similarly $(q_1,p_2)\not\in \cal R$ can be argued. Therefore if ${\cal R}$ is a simulation $(q_0,p_0)\not\in\cal R$.
+\qed
+\end{example}
+
+Now, two processes $p$ and $q$ could be considered equivalent if they simulate each other, i.e.\@ $p\simeq q$ iff $p\preceq q$ and $q\preceq p$. However, this equivalence (often called {\it trace equivalence\/} does not preserve deadlock properties, as illustrated by the following example:
+
+\begin{example}\label{exDeadlock}
+Let {\bf P} be given by the diagram below:
+
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(21.00,40.00){\makebox(0,0)[cc]{$p_1$}}
+\put(20.00,38.00){\vector(-1,-2){6}}
+\put(15.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(22.00,38.00){\vector(1,-2){6}}
+\put(27.00,33.00){\makebox(0,0)[cc]{$a$}}
+
+\put(15.00,24.50){\makebox(0,0)[cc]{$p_2$}}
+\put(14.50,23.00){\vector(0,-1){15}}
+\put(13.00,16.50){\makebox(0,0)[cc]{$b$}}
+\put(15.00,6.50){\makebox(0,0)[cc]{$p_3$}}
+
+\put(28.00,24.50){\makebox(0,0)[cc]{$p_4$}}
+
+
+\put(62.00,40.00){\makebox(0,0)[cc]{$q_1$}}
+\put(61.50,38.00){\vector(0,-1){13}}
+\put(63.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(62.00,23.50){\makebox(0,0)[cc]{$q_2$}}
+\put(61.50,22.00){\vector(0,-1){14}}
+\put(63.00,16.00){\makebox(0,0)[cc]{$b$}}
+\put(62.00,6.50){\makebox(0,0)[cc]{$q_3$}}
+\end{picture}
+
+\noindent
+Then ${\cal R}_1 = \{(q_i,p_i)\mid i=1,2,3\}$ and ${\cal R}_2 = \{(p_i,q_i)\mid i=1,2,3\} \bigcup \{(p_4,q_2)\}$ are both simulations. Thus, $p_1\preceq q_1$ and  $q_1\preceq p_1$. However, $p_1$ can perform and $a$-action and reach a state where a $b$-action is impossible, whereas $q$ cannot. Thus, $p$ and $q$ have different deadlock properties.
+\qed
+\end{example}
+
+In order to obtain an equivalence that does preserve deadlock properties the notion of bisimulation is introduced. Uner this notion, two processes are considered equivalent if they have the same set of potential first actins and can remain having equal pontentiallity during the course of execution. More formally we have:
+
+\begin{definition}[Bisimulation]\label{defBisim}
+A binary releation $\cal R$ on $Pr$ is a {\em bisimulation\/} iff both $\cal R$ and
+\[
+{\cal R}^T = \{(p,q)\mid (q,p)\in{\cal R}\}
+\]
+are simulations. Two processes, $p$ and $q$ are said to be {\em bisimulation equivalent\/} iff there exists a bisimulatin $\cal R$ with $p{\cal R}q$. In this case we write $p\sim q$.
+\qed
+\end{definition}
+
+\noindent
+For ${\cal R}\subseteq Pr^2$ define $\overline{\cal S}({\cal R})$, ${\cal B}({\cal R}) \subseteq Pr^2$ as:
+\begin{equation}\label{eqSoverlineR}
+\overline{\cal S}({\cal R}) = ({\cal S}({\cal R}^T))^T\hbox{\ and\ } {\cal B}({\cal R})={\cal S}({\cal R})\cap \overline{\cal S}({\cal R}).
+\end{equation}
+
+\noindent
+Then we have the following properties:
+
+\begin{proposition}
+${\cal R}\subseteq Pr^2$ is a bisimulation iff ${\cal R}\subseteq {\cal B}({\cal R})$.
+\proof By proposition~\ref{propSim} and the definition of bisimulation.\qed
+\end{proposition}
+
+\noindent
+For future development the following more general notion of {\em approximate bisimulations\/} is useful.
+
+\begin{definition}[Approximate bisimulation]\label{defApproximateBisimulation}
+Let $B\subseteq Pr^2$. A binary relation $\cal R$ on $Pr$ is said to be an {\em approximate bisimulation\/} with respect to $B$ if
+\[
+{\cal R}\setminus B\subseteq {\cal B}({\cal R}).
+\]
+\noindent
+Whenever $B$ is implicitly given we will say that $\cal R$ is an approximate bisimulation.
+\qed
+\end{definition}
+
+\noindent
+Thus $\cal R$ will be a bisimulation with respect to $B$ if only $B\subseteq {\cal B}({\cal R})$ can be established.
+
+From an implementation point of view the definition of bisimulation leaves much to be desired. However, the following proposition throws some light on these problems.
+
+\begin{proposition}[Strong bisimulation]
+\label{propStrongBisim}
+${\cal R}\subseteq Pr^2$ is a strong bisimulation iff whenever $p{\cal R}q$
+\begin{enumerate}
+\item if $p\rel{\alpha}p'$ then $\exists q': q\rel{\alpha}q'\;\;\wedge\;\;p'{\cal R}q'$
+\item if $q\rel{\alpha}q'$ then $\exists p': p\rel{\alpha}p'\;\;\wedge\;\;q'{\cal R}p'$
+\end{enumerate}
+\qed
+\end{proposition}
+
+\noindent
+As we can see from this proposition, it is possible to determine whether two processes are bisimulation equivalent or not just by (recursively) trying to match a derivation $p\rel{\alpha}p'$ of $p$ by a derivation $q\rel{\alpha}q'$ of $q$ so that the derivations of $p'$ again can be matched by some derivation of $q'$ and so on. $q$'s derivations should be treated similarily.
+
+\noindent
+We still have some important properties to state.
+
+\begin{proposition}
+${\cal B}$ is a monotonic endofunction on the complete lattice of binary relations over $Pr$.
+\proof By proposition~\ref{propMonotonic} and the fact that $\bigcap$ and $()^T$ (transposition) are monotonic functions.
+\qed
+\end{proposition}
+
+\begin{proposition}
+\label{propMaxFixedPoint}
+$\cal B$ has a maximal fixed-point which equals $\sim$.
+\qed
+\end{proposition}
+
+\begin{proposition}
+$\sim$ is a equivalence relation.
+\proof $Id_{Pr} = \{(p,p)\mid p\in Pr\}$ is a bisimulation. Bisimulations are closed under composition and $()^T$.
+\qed
+\end{proposition}
+
+`$\sim$' is a congruence relation, i.e.\@ id $p\sim q$ then $p$ and $q$ can be interchanged in any context, as stated in the following theorem.
+
+\begin{theorem}
+$\sim$ is a congruence relation. More preciesely $p_1\sim p_2$ implies
+\begin{enumerate}
+\item $p_1+q\;\sim\; p_2+q$, $q+p_1\;\sim\; q+p_2$
+\item $\alpha.p_1\;\sim\;\alpha.p_2$, $\tau.p_1\;\sim\;\tau.p_2$
+\item $p_1\mid q\;\sim\; p_2\mid q$, $q\mid p_1\;\sim\; q\mid p_2$
+\item $p_1\setminus S\;\sim\; p_2\setminus S$, $p_1[N]\;\sim\; p_2[N]$
+\end{enumerate}
+\proof see~\cite{Milner}.\qed
+\end{theorem}
+
+As for simulation the definition of bisimulation equivalence provides an elegant proof technique due to proposition~\ref{propMaxFixedPoint}. To prove that $p\sim q$ it is sufficient and necessary to find a bisimulation containing $(p,q)$.
+
+\begin{example}
+Let $P$ be given by the diagram below:
+
+\unitlength=1.000mm
+\begin{picture}(90.00,45.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(83.00,41.00)[cc]{}}
+\put(18.00,40.00){\makebox(0,0)[cc]{$p_0$}}
+\put(16.50,38.00){\vector(0,-1){13}}
+\put(18.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(16.50,21.70){\makebox(0,0)[cc]{$p_1$}}
+\put(15.00,20.00){\vector(-1,-2){6}}
+\put(10.00,14.00){\makebox(0,0)[cc]{$b$}}
+\put(18.00,20.00){\vector(1,-2){6}}
+\put(23.00,14.00){\makebox(0,0)[cc]{$c$}}
+\put(8.00,6.50){\makebox(0,0)[cc]{$p_2$}}
+\put(26.00,6.50){\makebox(0,0)[cc]{$p_3$}}
+
+\put(56.00,40.00){\makebox(0,0)[cc]{$q_0$}}
+\put(55.00,38.00){\vector(-1,-1){12}}
+\put(48.00,33.00){\makebox(0,0)[cc]{$a$}}
+\put(57.00,38.00){\vector(1,-1){12}}
+\put(64.50,33.00){\makebox(0,0)[cc]{$a$}}
+
+\put(43.50,21.70){\makebox(0,0)[cc]{$q_1$}}
+\put(42.00,20.00){\vector(-1,-2){6}}
+\put(37.00,14.00){\makebox(0,0)[cc]{$b$}}
+\put(45.00,20.00){\vector(1,-2){6}}
+\put(50.00,14.00){\makebox(0,0)[cc]{$c$}}
+\put(34.00,6.50){\makebox(0,0)[cc]{$q_3$}}
+\put(53.00,6.50){\makebox(0,0)[cc]{$q_4$}}
+
+\put(68.50,21.70){\makebox(0,0)[cc]{$q_2$}}
+\put(67.00,20.00){\vector(-1,-2){6}}
+\put(62.00,14.00){\makebox(0,0)[cc]{$c$}}
+\put(70.00,20.00){\vector(1,-2){6}}
+\put(75.00,14.00){\makebox(0,0)[cc]{$b$}}
+\put(59.00,6.50){\makebox(0,0)[cc]{$q_5$}}
+\put(78.00,6.50){\makebox(0,0)[cc]{$q_6$}}
+
+\end{picture}
+
+\noindent
+Then ${\cal R} = \{(p_0,q_0),(p_1,q_1),(p_1,q_2),(p_2,q_3),(p_2,q_6),(p_3,q_4),(p_3,q_5)\}$ is a bisimulation with $p_0{\cal R}q_0$. Thus $p\sim q$. In example~\ref{exDeadlock}, ${\cal R}_1\not={{\cal R}_{2}}^T$ so there is no reason to conclude $p_1\sim q_1$. In fact it can be shown that the two processes $p_1$ and $q_1$ of example~\ref{exDeadlock} are not bisimulation equivalent.
+\qed
+\end{example}
+
+The above example gives some indication od the relationship between the simulation ordering $\preceq$ and the bisimulation equivalence $\sim$.
+
+\begin{proposition}
+if $p\sim q$ then $p\simeq q$.
+\proof Follows straight forward from the definition of $\cal B$ (equation~\ref{eqSoverlineR}).
+\qed
+\end{proposition}
+
+\noindent
+Restricted process systems have an interesting property concerning bisimulation equivalence, which is stated in the following theorem.
+
+\begin{theorem}
+Let $\hbox{\bf P} = (pr, Act, \rel{})$ be a process system and $Q$ be $\rel{}$-closed subset of $Pr$, then
+\[
+\forall p,q\in Q: p\sim q\;\hbox{in \bf P}\;\Leftrightarrow\; p\sim q\;\hbox{in \bf P}\downarrow Q
+\]
+\proof\linebreak[4]
+$\underline{\Rightarrow :}\;\;p\sim q\;\hbox{in \bf P}\downarrow Q$ follows directly as $Q\subseteq Pr\;\wedge\; Q$ is $\rel{}$-closed.
+\linebreak[4]
+$\underline{\Leftarrow :}\;$ Follows from the fact that $Q$ is $\rel{}$-closed.
+\qed
+\end{theorem}
+
+
+\noindent
+This theorem states that if two processes $p$ and $q$ are bisimulation equivalent in a restricted process system, {\bf P}$\downarrow Q$, then they will be bisimulation equivalent in {\bf P} (notice that no restraints on {\bf P} are given).
+
+Though `$\sim$' has these properties we are still not quite satisfied, as in general we are not interested in {\it how\/} the process got to a given point (performed by a specific action) but rather {\it if\/} it gets there. Intuitively, we do not care about how many (if any) silent actions ($\tau$) the process has to make in order to reach the goal i.e.\@ we want unobservable actions ($\tau$) to be absorbed by `$\rel{}$'. For this purpose a new notation is introduced.
+
+\begin{notation}
+A general derivation of the form
+\[
+p\der{\alpha_1}p_1\der{\alpha_2}\ldots \der{\alpha_n}p_n
+\]
+\noindent
+will often be written as
+\[
+p\der{\alpha_1\alpha_2\ldots\alpha_n}p_n.
+\]
+We can also abbreviate
+\[
+p\der{\tau^n}p'\;\hbox{by}\;p\obder{\epsilon}p',\; n\geq0
+\]
+and
+\[
+p\der{\tau^n\alpha\tau^m}p'\;\hbox{by}\;p\obder{\alpha}p',\; n,m\geq0
+\]
+and finally for each $s=\alpha_1\alpha_2\ldots\alpha_n \in (Act\setminus\{\tau\})^*$
+\[
+p\obder{\alpha_1\alpha_2\ldots\alpha_n}p'\;\hbox{equals}\;p\obder{s}p',\; n,m\geq0
+\]
+\qed
+\end{notation}
+
+\noindent
+With this definition of `$\obder{}$' the following result follows as an easy corollary of proposition~\ref{propCCSfinite}.
+
+\begin{corollary}
+For all CCS-expressions, $p$, the set
+\[
+\{(\alpha,p')\mid p\obder{\alpha}p'\}
+\]
+is finite.
+\qed
+\end{corollary}
+
+In the following we will be considering a special bisimulation, namely {\it weak bisimulation\/}, defined as follows
+
+\begin{definition}[Weak bisimulation]\label{defWeakBisim}
+${\cal R}\subseteq Pr^2$ is a {\em weak bisimulation\/} iff whenever $p{\cal R}q$ and $s\in (\Delta\cup\overline{\Delta})^* \cup \{\epsilon\}$
+\begin{enumerate}
+\item if $p\obder{s}p'$ then $\exists q': q\obder{s}q'\;\wedge\; p'{\cal R}q'$
+\item if $q\obder{s}q'$ then $\exists p': p\obder{s}p'\;\wedge\; p'{\cal R}q'$
+\end{enumerate}
+If we can find a weak bisimulation $\cal R$ with $p{\cal R}q$, then we write $p\approx q$ and say that $p$ and $q$ are {\em observational equivalent\/}.
+\qed
+\end{definition}
+
+(This definition has a special property; the two processes $infinite :=: \tau.infinite$ and $NIL$ are in fact observational equivalent, $infinite\approx NIL$! Thus, whenever we have proved $p\approx q$---e.g.\@ $p$ may be a program and $q$ its specification---we cannot deduce that $p$ nas no infinite unseen actions, even if $q$ has none).
+
+Unlike the definition of (strong) bisimulation the definition of weak bisimulation is not directly suitable for implementation. However, by putting som restrictions on $s$ we obtain the following useful proposition allowing us only to consider observational sequences of lenght at most 1.
+
+\begin{proposition}\label{propWeakBisimI}
+${\cal R}\subseteq Pr^2$ is a weak bisimulation if whenever $p{\cal R}q$, $s\in (\Delta\cup\overline{\Delta})^*\cup\{\epsilon\}$ and $\|s\|\leq1$
+\begin{enumerate}
+\item if $p\obder{s}p'$ then $\exists q': q\obder{s}q'\;\wedge\; p'{\cal R}q'$
+\item if $q\obder{s}q'$ then $\exists p': p\obder{s}p'\;\wedge\; p'{\cal R}q'$
+\end{enumerate}
+\proof Follows directly from the definition of weak bisimulation.
+\qed
+\end{proposition}
+
+\noindent
+However, from an implementation point of view it would be better if we could get rid of the extra nondeterminism introduced by `$\obder{}$'. therefore, yet another (the last) version of weak bisimulation is needed.
+
+\begin{proposition}\label{propWeakBisim}
+${\cal R}\subseteq Pr^2$ is a weak bisimulation if whenever $p{\cal R}q$ and $\alpha\in Act$
+\begin{enumerate}
+\item if $p\der{\alpha}p'$ then $\exists q':q\obder{\hat{\alpha}}q'\;\wedge\; p'{\cal R}q'$
+\item if $q\der{\alpha}q'$ then $\exists p':p\obder{\hat{\alpha}}p'\;\wedge\; p'{\cal R}q'$
+\end{enumerate}
+where $\hat{\alpha} = \alpha$ when $\alpha\not=\tau$ and $\hat{\tau} = \epsilon$,
+\proof Follows immediately from proposition~\ref{propWeakBisimI} and the fact that
+\[
+p\der{s}p'\;\Rightarrow\;p\obder{\hat{s}}p',\; \|s\|=1
+\]
+\qed
+\end{proposition}
+
+\noindent
+This proposition is very suitable for implementation purposes as it is easy to determine a process' immediate derivatives.
+
+\noindent
+Naturally, we cannot expect to make abstractions without paying something in return. We can get a hint of the price to pay by the following propositon.
+
+\begin{proposition}\label{propTauApprox}
+$p\approx\tau.p$
+\proof see~\cite{Milner}.
+\qed
+\end{proposition}
+
+\noindent
+Using this result it can be argued that `$\approx$' cannot be a congruence relation. In particulr $p_1\approx p_2$ does not imply $p_1+p\;\approx\;p_2+p$ (e.g.\@ take $p_1 :=: NIL$, $p_2 :=:  \tau.NIL$ and $p:=: \alpha.NIL$, then $p_1\approx p_2$ according to proposition~\ref{propTauApprox}, but $p_1+p\;\not\approx\; p_2+p$. You see this by observing RHS $\obder{\epsilon} NIL$ but the only $\epsilon$-experiment possible on LHS yields a result which is $\not\approx NIL$).
+
+\begin{theorem}\label{theoSimImplyApprox}
+$p\sim q$ implies $p\approx q$.
+\proof Follows directly from the respective propositions, as
+\[
+p\der{\alpha}p'\;\Rightarrow\;p\obder{\alpha}p', \alpha\in Act\setminus \{\tau\}
+\]
+and
+\[
+p\der{\tau}p'\;\Rightarrow\;p\obder{\epsilon}p'
+\]
+\qed
+\end{theorem}
+
+\noindent
+This theorem stats that all algebraic lwas that hold for `$\sim$' also hold for `$\approx$'.
+
+\begin{theorem}\label{theoObderCongruence}
+Observational equivalence is a congruence for all operations except `$+$'. More precisely
+\[
+p\approx p'\;\Longrightarrow \left\{
+\begin{array}{l}
+\alpha.p\approx\alpha.p'\hbox{, }\tau.p\approx\tau.p'\\
+p\mid q\approx p'\mid q\\
+p\setminus S\approx p'\setminus S\hbox{, }p[N]\approx p'[N]
+\end{array}
+\right.
+\]
+\proof see~\cite{Milner}.
+\qed
+\end{theorem}
+
+\noindent
+Proposition~\ref{propTauApprox} and theorem~\ref{theoSimImplyApprox} and~\ref{theoObderCongruence} together state that we can use all our laws and cancel $\tau$'s, in proving observational equivalence---as long as nothing is inferred about the result of substituting $p$ for $q$ under `$+$' when we only know $p\approx q$.
+
+\section{Modal characterizations}
+Matthew Hennessy and Robin Milner showed in~\cite{HennessyMilner} that both $\preceq$ and $\sim$ can alternatively be characterized by identifying a process with the properties it enjoys. That is, two processes are equivalent if and only if they enjoys exactly the same properties. The negative form of this statement brings further clarity to the usefulness of properties: two processes are inequivalent if one enjoys a property the other does not enjoy. It follows, as such, that we may in case of inequivalence use such a property (enjoyed by one and not by the other) as an {\em explanation\/} for the inequivalence. The remaining task then, is to find such a distinguishing property automatically.
+
+For image-finite process systems the relevant properties are formulas from the following modal languages:
+
+\noindent
+Let the language $M$ (of formulas) be the least set such that:
+\begin{enumerate}
+\item $\dtt\in M$
+\item $F\wedge G\in M$ whenever $F, G\in M$
+\item $\neg F\in M$ whenever $F\in M$
+\item $\can{\alpha}F\in M$ whenever $\alpha\in Act\;\wedge\; F\in M$
+\end{enumerate}
+In~\cite{HennessyMilner} the authors define a satisfaction relation, $\models\,\subseteq Pr\times M$, as the least relation such that:
+\begin{enumerate}
+\item $p\models \dtt$ for $p\in Pr$
+\item $p\models F\wedge G$ iff $p\models F\;\wedge\; p\models G$
+\item $p\models \neg F$ iff $p\not\models F$
+\item $p\models\can{\alpha}F$ iff $\exists p': p\der{\alpha}p'\;\wedge\; p'\models F$
+\end{enumerate}
+
+\begin{notation}
+In the later discussions we will adopt the following convenient notations:
+\[
+\begin{array}{c@{\ \hbox{stands for}\ }l}
+\dff & \neg \dtt\\
+A\vee B & \neg (\neg A\wedge\neg B)\\
+\may{\alpha}F & \neg\can{\alpha}\neg F
+\end{array}
+\]
+\qed
+\end{notation}
+
+We say $p$ is $\alpha$-deadlocked if there are no $\alpha$-experiments on $p$. From the definition of the satisfaction relation, $\models$, we can now interpret many simple sentences as assertions about the possibility of deadlock as illustrated in the following example.
+
+\begin{example}Some interpretations of simple modal properties:
+\begin{enumerate}
+\item $p\models \can{\alpha}\dtt$; it is possible to carry out an $\alpha$-experiment on $p$
+\item $p\models\may{\alpha}\dff$; $p$ is $\alpha$ deadlocked
+\item $p\models\can{\alpha}(\may{\beta}\dff\,\vee\,\may{\gamma}\dff)$; via an $\alpha$-experiment it is possible to get into a state that is either $\beta$-deadlocked or $\gamma$-deadlocked
+\item $p\models\may{\alpha}(\can{\beta}\may{\gamma}\dff)$; at the end of any $\alpha$-experiment a $\beta$-experiment that will leave the program in a state that is $\gamma$-deadlocked is possible
+\end{enumerate}
+\qed
+\end{example}
+
+Let $L$ be the sublanguage of $M$ consisting of the formulas not containing $\neg$. Now, define for $p\in Pr$ the following two sets:
+\[
+M(p) = \{F\in M\mid p\models F\}\;\hbox{ and }\;L(p)=\{F\in L\mid p\models F\}
+\]
+Then $\preceq$ and $\sim$ have the following characterizations:
+\begin{theorem}\label{theoModalCharacterization}
+If {\bf P\/} is image-finite then:
+\begin{enumerate}
+\item $p\sim q$ iff $M(p) = M(q)$
+\item $p\preceq q$ iff $L(p)\subseteq L(p)$
+\end{enumerate}
+\proof see~\cite{HennessyMilner}.
+\qed
+\end{theorem}
+
+Using proposition~\ref{propWeakBisim} it is easy to obtain similar characterization of $\approx$ using the following manguage $M_O$. Let the language $M_O$ of formulas be the least set such that:
+\begin{enumerate}
+\item $\dtt\in M_O$
+\item $F\wedge G\in M_O$  whenever $F, G\in M_O$
+\item $\neg F\in M_O$ whenever $F\in M_O$
+\item $\obcan{\alpha}F\in M_O$ whenever $\alpha\in\{Act\setminus\{\tau\}\}\;\wedge\; F\in M_O$
+\item $\obcan{\epsilon}F\in M_O$ whenever $F\in M_O$
+\end{enumerate}
+
+\noindent
+Furthermore, let $\models_O\subseteq Pr\times M_O$ be the least relation such that:
+\begin{enumerate}
+\item $p\models_O \dtt$ for $p\in Pr$
+\item $p\models_O F\wedge G$ iff $p\models_O F\;\wedge\; p\models_O G$
+\item $p\models_O \neg F$ iff $p\not\models_O F$
+\item $p\models_O\obcan{\alpha}F$ iff $\exists p': p\obder{\alpha}p'\;\wedge\; p'\models_O F$
+\item $p\models_O\obcan{\epsilon}F$ iff $\exists p': p\obder{\epsilon}p'\;\wedge\; p'\models_O F$
+\end{enumerate}
+
+\begin{notation}\label{notationDerShorthand}
+We will adopt the following convenient notations:
+\[
+\begin{array}{c@{\hbox{\ \ \hbox{stands for}\ \ }}l}
+\dff & \neg \dtt\\
+A\vee B & \neg (\neg A\wedge\neg B)\\
+\obmay{\alpha}F & \neg\obcan{\alpha}\neg F\\
+\obmay{\epsilon}F & \neg\obcan{\epsilon}\neg F
+\end{array}
+\]
+We will use $\models$ instead of $\models_O$ whenever there is no possibility for confusion.
+\qed
+\end{notation}
+
+\noindent
+Notice, that $M_O$ gives us the possibility to abstract from $\tau$'s in modal formulas as opposed to $M$. In anology to $M$, $M_O$ has the following (important) property
+\begin{theorem}
+If {\bf P\/} is image-finite under $\obder{}$ then:
+\[
+p\approx q \Leftrightarrow M_O(p) = M_O(q)
+\]
+\proof see~\cite{HennessyMilner}.
+\qed
+\end{theorem}
+
+% end of chapter
+
+

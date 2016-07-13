@@ -1,0 +1,176 @@
+% chapter : The PROLOG implementation
+
+\chapter{The PROLOG implementation}\label{chapProlog}
+In this section we will present the PROLOG implementation of the improved inference system, and demonstrate its usefulness through some examples. We will discuss the necessary changes to the system in order for it to find weak bisimulations and demonstrate this (much more interesting) system by further examples.
+
+\section{CCS in PROLOG}
+It is (surprisingly) simple to represent CCS and its operational semantics in PROLOG. For each process construction a corresponding PROLOG-operator is introduced. Of cause, it is not possible to use the standard notation (e.g.\@ as prefixing; `.' has a special meaning in PROLOG) and the notation used i shown in figure~\ref{figPrologCCSnotation}. The {\tt a} in prefixing can be any action. Complementary actions, used in connection with parallel composition, are implemented by the two predicates {\tt in} and {\tt out}. The set $Act_{PROLOG}$ is thus the set of (lower case) names
+\begin{verbatim}
+        atom  |  in(atom)  |  out(atom)  |  tau
+\end{verbatim}
+with $\mbox{\tt atom}\in(Act\setminus\tau)$, where {\tt tau} is the special action, $\tau$, representing an unobservational action. Note, that for convenience {\em restriction to\/} is used in the PROLOG implementation rather than {\em restriction from\/} in standard CCS manner. Sets and operations on sets are implemented as lists and operations on lists. The members of {\tt S} in restriction and the actions in renaming may only be atoms (i.e.\@ {\tt in()}/{\tt out()}-forms and {\tt tau} are not allowed).
+
+\begin{figure}
+\begin{tabular}{l||cc}
+{\Large Construction} & {\Large CCS-notation} & {\Large PROLOG-notation}\\ \hline 
+inaction & $NIL$ & {\tt nil}\\
+prefixing& $a.p$ & {\tt a;p}\\
+summation& $p + q$&{\tt p + q}\\
+parallel & $p\,\mid\,q$ & {\tt p / q}\\
+restriction& $p\setminus(Act\setminus S)$ & {\tt \verb!p\S!}\\
+renaming & $p[a/b]$ & {\tt p-[a:=b]}
+\end{tabular}
+\caption{Standard CSS-notation versus PROLOG-notation.\label{figPrologCCSnotation}}
+\end{figure}
+
+The assignment operator, {\tt :=:}, is also available assigning process expressions (behaviours) to process identifiers allowing the definition of (mutually) recursive processes.
+
+\noindent
+Parentheses are used to override the introduced operator precedence:
+\[
+prefix\;>\;restriction\;>\;renaming\;>\;summation\;>\;parallel
+\]
+In order to complete the implementation of the operational semantics, the derivation relation $\der{}$ has to be implemented. $\der{}$ is in PROLOG represented as the predicate {\tt der} with an almost one-to-one correspondence between the inference rules for $\der{}$ (see figure~\ref{figOpSemantics}) and the PROLOG clauses {\tt der} shown in figure~\ref{figPrologDer}.
+\begin{figure}
+\inclverbatim{prolog/der.inp}
+\caption{Standard CSS' operational semantics in PROLOG.\label{figPrologDer}}
+\end{figure}
+
+\section{Using the system}
+By combining the representation of CCS in PROLOG with the PROLOG implementation of the new inference system (of figure~\ref{figNewSysInference}) and some auxiliary predicates we obtain a new system for proving or disproving bisimulation equivalence between CCS-processes. As with $\der{}$, the inference system can readily be represented in PROLOG wit an (almost) one-to-one correspondence between the inference rules and the corresponding PROLOG clauses (see figure~\ref{figPrologInf} or appendix~\ref{appPrologImp} for the full PROLOG implementation). Note, however, in PROLOG the side-conditions are included as a part of the premise.
+\begin{figure}
+\inclbabyfull{prolog/newbisim.inp}%
+\caption{PROLOG representation of the extended inference system.\label{figPrologInf}}
+\end{figure}
+
+\noindent
+We will demonstrate the usefulness of the system through a couple of examples. First, consider the processes of example~\ref{exDeadlock}. They can be represented in PROLOG by
+\inclverbatim{prolog/examples/ex1.inp}%
+In example~\ref{exDeadlock} we found that $p1$ and $q1$ have different deadlock properties and they can thus not be bisimulation equivalent. Lets us verify this by using the system:
+\inclverbatim{prolog/examples/ex1.out}%
+As we can see, $p_1$, can reach a \verb!b!-deadlocked state after an \verb!a!-experiment which $q_1$ cannot. If we, however, prefer to have a property that $q_1$ enjoys which $p_1$ does not enjoy, then the order of the parameters of 
+\verb!bisim! should just be reversed i.e\@
+\inclverbatim{prolog/examples/ex2.out}%
+and we see that no matter how an \verb!a!-experiment is performed on $q_1$ it is always possible to perform a \verb!b!-experiment afterwards, which truly distinguishes the two processes.
+
+Consider now an automatic vending machine offering hot drinks e.g.\@ coffee or tea. Such a machine could for instance be represented in PROLOG by
+\inclverbatim{prolog/examples/ex3a.inp}
+A vending machine of a different brand could in PROLOG be
+\inclverbatim{prolog/examples/ex3b.inp}
+(This example corresponds to examples~\ref{examPartitioning} and~\ref{examPartitioningApply}). Now, verifying the inequivalence of the two processes using the system results in the following modal argument:
+\inclverbatim{prolog/examples/ex3.out}
+As we can see, the two processes are inequivalent and \verb!vendonce_machine1! enjoys the property that after a coin there is a free choice of either coffee or tea, which \verb!vendonce_machine2! does not enjoy. \verb!vendonce_machine2!, of cause, enjoys a property \verb!vendonce_machine1! does not enjoy which can be found by
+\inclverbatim{prolog/examples/ex4.out}%
+Again, it is obvious that the two processes are inequivalent; the reason being that, \verb!vendonce_machine2! can after a coin has been inserted reach a state where it is impossible to buy tea (\verb!tea!-deadlocked). This example compared to example~\ref{examPartitioningApply} indicates that this system produces modal properties which are significantly `smaller' than the ones produced by~\cite{VestmarOlesen}'s system.
+
+The two examples presented so far have been rather trivial and serves mainly as easy-to-understand-introductory-examples. However, most interesting examples are the ones best studied by using weak bisimulation.
+
+\subsection{Weak bisimulation in PROLOG}\label{secWeakBisim}
+By proposition~\ref{propWeakBisim} it is possible to change the system in order to find weak bisimulations by exchanging the \verb!der!-predicate in \verb!matchl! and \verb!matchr! clauses with a PROLOG implementation of $\obder{}$, \verb!obder!, possibly represented as in figure~\ref{figObderImpl}. We use $M_O$ as our modal language using the following simplification equations (follows from the definition of $\obder{}$):
+\begin{figure}
+\inclverbatim{prolog/obder.inp}%
+\caption{Observational derivation in PROLOG.\label{figObderImpl}}
+\end{figure}
+\[\begin{array}{c@{\;\;\;}c@{\;\;\;}c}
+\obcan{\epsilon}\obcan{\alpha}F & \equiv & \obcan{\alpha}F\\
+\obcan{\alpha}\obcan{\epsilon}F & \equiv & \obcan{\alpha}F\\
+\\
+\obmay{\epsilon}\obmay{\alpha}F & \equiv & \obmay{\alpha}F\\
+\obmay{\alpha}\obmay{\epsilon}F & \equiv & \obmay{\alpha}F\\
+\end{array}
+\]
+Now, by using a system for finding weak bisimulations similar to the previous system we are able to handle somewhat more interesting examples.
+
+Again, consider the vending machines from above. Normally, though, a vending machine is constructed in order to serve several customers. Cyclic versions of the above vending machines can be defined by
+\inclverbatim{prolog/examples/ex5.inp}
+By placing  the machines in a university environment we can measure the usefulness of the respective machines by installing them in departments with coffee-drinking computer-scientists and see if they are publishing enough papers (as everybody know, computer-scientists cannot work, e.g.\@ make publications, without having coffee to drink). Also, computer-scientists are widely known to be somewhat absent-minded, so the vending machine will be placed in a separate room in order to let the scientists be undisturbed when vending their coffee. We thus define a (semaphore) \verb!door! as
+\inclverbatim{prolog/examples/ex5a.inp}%
+and the computer-scientist as
+\inclverbatim{prolog/examples/ex5b.inp}%
+Then we can define the two departments and an ideal department as
+\inclverbatim{prolog/examples/ex5c.inp}%
+concentrating on whether or not publications are continuously produced as by the \verb!ideal_department!.
+\inclverbatim{prolog/examples/ex5.out}%
+As we can see, the system found a bisimulation of the \verb!good_department! and \verb!ideal_department! consisting of the pairs listed. Each pair is listed with the lefthand argument (e.g.\@ \verb!good_department!) appearing on the line above the righthand argument (e.g.\@ \verb!ideal_department!) which is output on the immediately following indented line. For \verb!bad_department! we have
+\inclverbatim{prolog/examples/ex6.out}%
+that it can be \verb!pub!-deadlocked, which certainly is not desirable. Thus, if we want the department to continuously produce publications a vending machine of a type similar to \verb!good_machine! should be chosen.
+\begin{figure}
+\noindent\hbox to3cm{}\unitlength=1.000mm
+\begin{picture}(70.00,35.00)(0,0)
+%\rm\put(2.00,2.00){\framebox(63.00,31.00)[cc]{}}
+\put(07.00,23.00){\vector(1,0){6}}
+\put(09.00,24.50){\makebox(0,0)[cc]{\footnotesize $in$}}
+\put(15.00,23.00){\circle{4}}
+\put(16.00,26.00){\oval(2,5)[tl]}
+\put(15.00,26.00){\vector(0,-1){1}}
+\put(16.00,28.50){\line(1,0){10}}
+\put(26.50,25.00){\framebox(15.00,8.00)[cc]{\footnotesize $m_{rs}$}}
+\put(51.50,28.50){\vector(-1,0){10}}
+\put(51.50,26.00){\oval(2,5)[tr]}
+
+\put(15.00,21.00){\line(0,-1){1}}
+\put(16.00,20.00){\oval(2,5)[bl]}
+\put(16.00,17.50){\vector(1,0){10}}
+\put(26.50,14.00){\framebox(15.00,8.00)[cc]{\footnotesize $m_{sr}$}}
+\put(41.50,17.50){\line(1,0){10}}
+\put(51.50,20.00){\oval(2,5)[br]}
+\put(52.50,23.00){\circle{4}}
+\put(54.50,23.00){\vector(1,0){6}}
+\put(57.00,24.50){\makebox(0,0)[cc]{\footnotesize $out$}}
+\put(52.50,20.00){\vector(0,1){1}}
+\put(52.50,26.00){\line(0,-1){1}}
+\put(20.00,16.00){\makebox(0,0)[cc]{\footnotesize $a$}}
+\put(47.00,16.00){\makebox(0,0)[cc]{\footnotesize $b$}}
+\put(20.00,30.00){\makebox(0,0)[cc]{\footnotesize $d$}}
+\put(47.00,30.00){\makebox(0,0)[cc]{\footnotesize $c$}}
+\put(15.00,23.00){\makebox(0,0)[cc]{\footnotesize $s$}}
+\put(52.50,23.00){\makebox(0,0)[cc]{\footnotesize $r$}}
+\end{picture}
+\caption{Alternating Bit Protocol scenario.\label{figAltBit}}
+\end{figure}
+
+Let us now turn to a different type of problems arising in distributed systems, namely networking. Especially we consider some simple versions of the Alternating Bit Protocol~\cite{Tanenbaum}. We have a scenario like the one in figure~\ref{figAltBit}. $s$ is the sender getting the input `$in$' sending a message `$a$' through the medium $m_{sr}$, which in turn sends a message `$b$' to the receiver, $r$. $r$ outputs `$out$' and gives an acknowledge `$c$' through the medium, $m_{rs}$, returning a `$d$' to $s$. The protocol must fulfil the specification $spec$ given by
+\inclverbatim{prolog/examples/ex7.inp}%
+Now, let us pretend that the media, $m_{sr}$ and $m_{rs}$, both are perfect i.e.\@ they do not loose or corrupt any messages.
+\inclverbatim{prolog/examples/ex7a.inp}%
+Then the sender and receiver are given by
+\inclverbatim{prolog/examples/ex7b.inp}%
+and as we would expect the composite system
+\inclverbatim{prolog/examples/ex7c.inp}%
+is observation equivalent with the specification \verb!spec! proved by our system
+\inclverbatim{prolog/examples/ex7.out}%
+A more realistic system would not expect all of its components to be perfect. Let us allow the media to loose messages i.e.\@
+\inclverbatim{prolog/examples/ex8a.inp}%
+but let \verb!s! and \verb!r! still believe that they have perfect media. Naturally, this new system
+\inclverbatim{prolog/examples/ex8b.inp}%
+does not fulfil the specification the reason being that
+\inclverbatim{prolog/examples/ex8.out}%
+i.e.\@ \verb!sys1! can become \verb!out!-deadlocked after having performed an \verb!in!-experiment. Obviously, the sender and the receiver must be able to repeat their messages until they receive a (new) message i.e.\@
+\[\begin{array}{l}
+s :=: d^{*}.in.\overline{a}^{*}.d.s\\
+r :=: \overline{c}^{*}.b.b^{*}.out.r
+\end{array}
+\]
+where $a^{*}.P$ is given by $X:=: a.X + P$ where $X$ is any process identifier not occurring in $P$. Will this system fulfil the specification? The new sender and receiver are thus given by
+\inclverbatim{prolog/examples/ex9a.inp}%
+and the new system is
+\inclverbatim{prolog/examples/ex9b.inp}%
+This system can now be tested against the specification
+\inclverbatim{prolog/examples/ex9.out}%
+and we see that \verb#sys2# is not equivalent to \verb#spec#! What went wrong? Well, out system claims that it is possible to perform two sequential \verb#out#-experiments following an \verb#in#-experiment on \verb#sys2# which is not the expected bahaviour. But how can that happen? Of course, the sender keeps on sending although the receiver already has received the message once, and the receiver `thinks' that each messae received after the first is a new one, thus it outputs \verb#out# each time. This problem is actually solved by the Alternating Bit Protocol (please refer to~\cite{Tanenbaum}).
+
+The last example we will consider origins from some lecture notes by Robin Milner~\cite{Larsen} and involves the representation of a workshop comprising two men, a hammer, and a mallet. We will use it as a stepping stone for introducing the last improvement to the system. A man can either use a hammer or a mallet to perform a job. \verb#gh# and \verb#ph# represents getting and putting the hammer, likewise \verb#gm# and \verb#pm# for the mallet. The behaviour of a \verb#man# is given by
+\inclverbatim{prolog/examples/ex10a.inp}%
+The hammer and he mallet are given by
+\inclverbatim{prolog/examples/ex10b.inp}%
+Now, the two men and their tools comprises the \verb#closedshop#
+\inclverbatim{prolog/examples/ex10c.inp}%
+The specification for \verb#closedshop# is given by the process \verb#donothing#
+\inclverbatim{prolog/examples/ex10d.inp}%
+The following shows that \verb#closedshop# is observational equivalent with \verb#donothing#
+\inclbabyfull{prolog/examples/ex10.out}%
+The (vast) number of pairs in the bisimulation indicates that it is necessary to make further improvements to the system, as fitting the bisimulation pairs together in order to obtain a proof will most certainly become an extremly teadious job even for moderate examples like the \verb#closedshop#. It is like having a jigsaw puzzle with 3000 pieces without a pricture to go with it---it is possible to fit the pieces together but hardly worth the trouble. We need a way of relating the bisimulation pairs. This will be dealt with in the following chapter.
+
+% end of chapter
+
+

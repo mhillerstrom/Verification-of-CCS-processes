@@ -1,0 +1,58 @@
+%Options: KBD=ISO88592; STD=ISO8859; LANG=ENGLISH; FMT=latex; HYPHEN=default;
+\documentclass[a4,11pt]{report}
+
+% M.Sc. Thesis in Computer Science
+%  "Verification of CCS-processes"
+% by Michael Hillerström
+
+\include{pdfinfo}
+\pdfinfo{Michael Hillerstrom}% Author
+        {Automatic verification}% Subject
+        {Verification of CCS-processes}% Title
+        {M.Sc. thesis,verification,automatic,proof,% Keywords
+         PROLOG,CCS,modal,equivalence,inequivalence}
+
+\include{thesisformat}
+
+
+\begin{document}
+% First the wrappings...
+\pagestyle{empty}\nopagenum
+\include{cover}
+\include{abstract}
+\include{titlepage}
+\include{preface}
+
+% Let's set-up the mode for the proper contents
+\pagestyle{plain}
+\pagenumbering{arabic}
+%\setcounter{page}{1}
+
+\tableofcontents
+
+% Make sure that an 'List of Figures' entry appear in the table of contents
+\addtocontents{lof}{\protect\addcontentsline{toc}{chapter}{\protect\numberline{}List of Figures}}
+
+% Let's include the important stuff
+\include{introduction}
+\include{basictheory}
+\include{existing}
+\include{anewsystem}
+\include{implementation}
+\include{extendedsystem}
+\include{conclusion}
+
+% Bibliography
+\include{thesisbib}
+
+% List of Figures
+\listoffigures
+
+% Appendices
+\appendix
+\include{appendixa}
+\include{appendixb}
+\include{appendixc}
+\include{appendixd}
+
+\end{document}

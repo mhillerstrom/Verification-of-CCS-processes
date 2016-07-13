@@ -1,0 +1,1383 @@
+% chapter : A new system
+
+\chapter[A new system]{A new system\subheading{---arguing for bisimulation equivalence and inequivalence.}}\label{chapAnew}
+
+In this section we will construct and verify rigorously a pure functional extension of the (minimal) algorithm in~\cite{Larsen}. The algorithm extends the one given in~\cite{Larsen} by, in addition to being a theorem prover, also being able to give an explanation of {\em why\/} two processes are not equivalent. The explanation given is a modal property which only one of the processes enjoy.
+
+\section{Construction and intuition}
+
+We will use the principle suggested in section~\ref{secProposalEnhance}, but avoid using side-effects. We will be needing some new concepts for convenience.
+
+\begin{definition}
+${\cal F}$ is a set of {\em argumented inequalities (AI)\/} if
+\[
+(p,q,F)\in {\cal F}\Rightarrow p\models F\; \wedge\; q\not\models F
+\]
+{\cal F} is said to {\em argue\/} $p\not\sim q$. This will often be written as ${\cal F}\models p\not\sim q$.
+\qed
+\end{definition}
+It should be noted that ${\cal F}\not\models p\not\sim q$ does {\em not\/} imply that $p\sim q$, but rather that $\cal F$ cannot give a valid argument for $p\not\sim q$ i.e.\@ $\forall F: (p,q,F)\not\in\cal F$.
+
+\begin{notation}
+In the following sections we will use the convention that an over lined variable in a PROLOG-clause or in an inference rule is intended as an output variable (for that clause/rule).
+\qed
+\end{notation}
+
+Note that $C = \overline{C}$, but $\overline{C}$ is more informative as it suggests that $C$ is (locally) used as an output variable.
+
+In the same manner as~\cite{Larsen} we are going to establish an operational based inference system for constructing bisimulations over $\bf P$ based on the derivation relation $\der{}$ of $\bf P$. Moreover, the inference system must also cover the construction of properties, i.e.\@ construction of the set, $\cal F$, of argumented inequalities, in case a bisimulation cannot be found. We shall prove the soundness and restricted completeness of the new system. Just as the minimal system of~\cite{Larsen} this new version can readily be implemented in PROLOG.
+
+Now let
+\[
+\begin{array}{l@{\;\;\;}c@{\;\;\;}l}
+\left.\begin{array}{l}bisim\end{array}\right.    & \subseteq & Pr\times Pr\times 2^{(Pr\times Pr)}\times 2^{(Pr\times Pr\times M)}\\
+\\
+\left.\begin{array}{l}closure\\ matchl\\ matchr\end{array}\right\}
+         & \subseteq & Pr\times Pr\times 2^{(Pr\times Pr)}\times 2^{(Pr\times Pr)}\times\\
+&& 2^{(Pr\times Pr\times M)}\times 2^{(Pr\times Pr\times M)}\\
+\\
+\left.\begin{array}{l}matchl^{+}\\ matchr^{+}\end{array}\right\}
+         & \subseteq & Pr\times Pr\times 2^{(Act\times Pr)}\times 2^{(Pr\times Pr)}\times 2^{(Pr\times Pr)}\times\\
+&& 2^{(Pr\times Pr\times M)}\times 2^{(Pr\times Pr\times M)}\\
+\end{array}
+\]
+be the smallest relations closed under the rules given in figure~\ref{figNewSysInference}. It is helpful to think of $bisim$, $closure$, $matchl$, and $matchr$ as being function from the arguments not over lined to the over lined arguments. An informal description of each of the four functions can thus be:
+\begin{itemize}
+\item[$bisim$:] Given two processes $p$ and $q$, $bisim$ will try to build a bisimulation, $C$, containing the pair $(p,q)$. If this succeeds then ${\cal F}_{out}\not\models p\not\sim q$ otherwise ${\cal F}_{out}\models p\not\sim q$.
+
+\item[$closure$:] Given two processes $p$ and $q$ and an approximate bisimulation, $B$, with $(p,q)\in B$, and a set of argumented inequivalences, ${\cal F}_{in}$, $closure$ will try to extend $B$ to a genuine bisimulation $D$. If this is impossible then ${\cal F}_{in}$ will be extended to a set of argumented inequivalences, ${\cal F}_{out}$, such that ${\cal F}_{out}\models p\not\sim q$.
+
+\item[$matchl$:] Given two processes $p$ and $q$ and an approximate bisimulation, $B$,  with $(p,q)\in B$, a subset, $M$, of $p$'s derivations such that $q$ only remains to match those derivations of $p$ which still are in $M$, and a set of argumented inequivalences, ${\cal F}_{in}$, $matchl$ will try to extend $B$ to an approximate (bi)simulation, $D$, closed under ${\cal L}$. If this is impossible then $matchl$ will extend ${\cal F}_{in}$ to a set of argumented inequivalences, ${\cal F}_{out}$, such that ${\cal F}_{out}\models p\not\sim q$.
+
+\item[$matchr$:] Given two processes $p$ and $q$ and an approximate bisimulation, $B$,  with $(p,q)\in B$, a subset, $N$, of $q$'s derivations such that $p$ only remains to match those derivations of $q$ which still are in $N$, and a set of argumented inequivalences, ${\cal F}_{in}$, $matchr$ will try to extend $B$ to an approximate (bi)simulation, $D$, closed under ${\cal R}$. If this is impossible then $matchr$ will extend ${\cal F}_{in}$ to a set of argumented inequivalences, ${\cal F}_{out}$, such that ${\cal F}_{out}\models p\not\sim q$.
+
+\end{itemize}
+
+
+\subsection{Soundness}
+
+The system is sound in the sense that whenever $bisim(p,q,\overline{C},\overline{{\cal F}_{out}})$ `succeeds' (terminates) then either $C$ is a bisimulation containing $p$ and $q$, or ${\cal F}_{out}$ arguments their inequivalence. Now, we will introduce four verification conditions $Bis$, $Cl$, $Ml$, and $Mr$, and show that these verification conditions are closed under the rules of the inference system (see figure~\ref{figNewSysInference}). Then we will have that the following inclusions hold:
+\[
+\begin{array}{l@{\;\;\subseteq\;\;}l@{\;\;\;\;\;\;}l@{\;\;\subseteq\;\;}l}
+bisim &  Bis & matchl &  Ml\\
+closure & Cl & matchr &  Mr\\
+\end{array}
+\]
+due to leastness of $bisim$, \ldots The soundness then follows directly.
+\begin{figure}
+\begingroup\tiny%\scriptsize%\footnotesize
+\[
+\begin{array}{r@{\;\;}c@{\;\;\;\;}l}
+B & : &
+\myfrac{closure(p,q,\{(p,q)\},\overline{C},\emptyset,\overline{{\cal F}_{out}})}{bisim(p,q,\overline{C},\overline{{\cal F}_{out}})}\\
+\\[.5\baselineskip]
+
+C & : &
+\myfrac{matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;\;matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_1\not\models p\not\sim q\;\wedge\\
+M=\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+N=\{(a,q')\mid q\der{a}q'\}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchl(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{out}\models p\not\sim q\;\wedge\\
+M=\{(a,p')\mid p\der{a}p'\}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+
+ML& : &
+\myfrac{}{matchl(p,q,\emptyset,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{in}})}\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchl(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+\exists q':q\der{a}q'\;\wedge\\
+(p',q')\in B\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q')\}\cup B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+q\der{a}q'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\\
+{\cal F}_{in}\not\models p'\not\sim q'\\
+{\cal F}_{1}\not\models p'\not\sim q'
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q')\}\cup B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchl(p,q,M,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+q\der{a}q'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\\
+{\cal F}_{in}\not\models p'\not\sim q'\\
+{\cal F}_{1}\not\models p'\not\sim q'
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchl(p,q,\{(a,p')\}\cup M,B,\overline{B},{\cal F}_{in},\{(p,q,\can{a}F')\}\cup{\cal F}_{in})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\not\models p\not\sim q\\
+F'=\bigwedge\{F_1,\ldots,F_n\}\\
+\mbox{where }\{q'_1,\ldots,q'_n\}=\{q'\mid q\der{a}q'\}\\
+\mbox{and }\forall i:(p',q'_i,F_i)\in{\cal F}_{in}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchl(p,q,M,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\models p\not\sim q\\
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+\\
+
+MR& : &
+\myfrac{}{matchr(p,q,\emptyset,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{in}})}\\
+\\[.5\baselineskip]
+& &
+\myfrac{matchr(p,q,N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+\exists q':q\der{a}q'\;\wedge\\
+(p',q')\in B\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q')\}\cup B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+p\der{a}p'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\\
+{\cal F}_{in}\not\models p'\not\sim q'\\
+{\cal F}_{1}\not\models p'\not\sim q'
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{closure(p',q',\{(p',q')\}\cup B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})\;\;matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})}
+\;\;\;\left\{
+\begin{array}{l}
+p\der{a}p'\;\wedge\\
+{\cal F}_{in}\not\models p\not\sim q\\
+{\cal F}_{in}\not\models p'\not\sim q'\\
+{\cal F}_{1}\not\models p'\not\sim q'
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchr(p,q,\{(a,q')\}\cup N,B,\overline{B},{\cal F}_{in},\{(p,q,\may{a}F')\}\cup{\cal F}_{in})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\not\models p\not\sim q\\
+F'=\bigvee\{F_1,\ldots,F_n\}\\
+\mbox{where } \{p'_1,\ldots,p'_n\}=\{p'\mid p\der{a}p'\}\\
+\mbox{and }\forall i:(p'_i,q',F_i)\in{\cal F}_{in}
+\end{array}
+\right.\\
+\\[.5\baselineskip]
+& &
+\myfrac{}{matchr(p,q,N,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})}
+\;\;\;\left\{
+\begin{array}{l}
+{\cal F}_{in}\models p\not\sim q\\
+\end{array}
+\right.
+
+\end{array}
+\]
+\endgroup
+\caption{Inference rules for new system.\label{figNewSysInference}}
+\end{figure}
+
+\begin{minipage}{\linewidth}\label{figNewSysInfInformal}
+\begingroup\scriptsize%\footnotesize
+\begin{tabular}{r@{$\;$:$\;\;$}p{.7\linewidth}}
+\multicolumn{2}{l}{}\\
+$B$ &
+We want to find a bisimulation $C$ containing the pair $(p,q)$. We are starting off from `nothing' i.e.\@, we do not know whether $p\sim q$ is true or not. Also, we have no knowledge of any other processes being (in)equivalent, i.e.\@ ${\cal F}_{in}=\emptyset$. So, we assume that $p\sim q$, i.e.\@ $(p,q)\in B$ ($= \{(p,q)\}$) and try to `close' $\{(p,q)\}$ with respect to $(p,q)$. If this is not possible ${\cal F}_{out}\models p\not\sim q$.\\
+\multicolumn{2}{l}{}\\
+$C$ &
+We will try to `close' $B$ with respect to $(p,q)$. This can be achieved by first assuring $C$ is $B$'s closure with respect to $p$'s derivations, $M$, and then in turn clode C with respect to $q$'s derivations, $N$, to obtain $D$ using $C_1$. If $B$ cannot be closed with respect to $p$'s derivations, then ${\cal F}_1\models p\not\sim q$ which is reported back through ${\cal F}_{out}$ of $C_2$.\\
+\multicolumn{2}{l}{}\\
+$ML_1$ &
+If $M=\emptyset$ then $B$ is already closed with respect to $p$'s derivations and $B$ is returned as the `new' closure. Also, we have gained no further knowledge concerning inequivalence of processes, so we simply return ${\cal F}_{in}$ as our new knowledge.\\
+
+$ML_2$ &
+We are concentrating on the derivation $p\der{a} p'$. if we can find an $a$-derivation of $q$ such that $q\der{a}q'$ and $(p',q')\in B$ then we will choose this q'! Now, we only need to find matching derivations of $q$ for those derivations of $p$ still in $M$.\\
+
+$ML_3$ &
+We want to collect as much inequivalence information as possible. Again, we are considering the derivation $p\der{a}p'$. If we can find an $a$-derivation of $q$ such that $q\der{a}q'$ and ${\cal F}_1\models p\not\sim q$, then we will try to close $\{(p',q')\}\cup B$ with respect to $(p',q')$. However, we want this to fail in order for ${\cal F}_1\models p'\not\sim q'$ so that we can use this additional knowledge in future work.\\
+
+$ML_4$ &
+Again, we are considering the derivation $p\der{a}p'$. If we can find an $a$-derivation of $q$ such that $q\der{a}q'$ and ${\cal F}_1\not\models p\not\sim q$, then we will try to close $\{(p',q')\}\cup B$ with respect to $(p',q')$. If we succeed, then we can concentrate on the remaining derivations of $p$, $M$, with the extended knowledge contained in $C$ and ${\cal F}_1$.\\
+
+$ML_5$ &
+We know that $q$ cannot match $p$'s $a$-derivation $p'$ and must try to find a valid argument. The argument is constructed from our inequivalence knowledge, ${\cal F}_{in}$, containing arguments of inequivalence of $p'$ and $q'_i\;\forall i\leq n$ where $\{q_1,\ldots,q_n\} = \{q'\mid q\der{a}q'\}$ (please refer to section~\ref{secProposalEnhance} for further details.\\
+
+$ML_5$ &
+Our `secret' door out whenever we know $p\not\sim q$.\\
+\multicolumn{2}{l}{}\\
+
+$MR_i$ & Similar to $ML_i$.
+
+\end{tabular}
+\endgroup
+\begin{center}
+Figure~\ref{figNewSysInference}(cont.): Intuitive description of the rules.\\
+\ \\
+\end{center}
+\end{minipage}
+
+From the informal description of $bisim$, \ldots we can determine what the verification conditions at least ought to satisfy e.g.\@ for $closure$ $Cl$ ought to be true whenever ${\cal F}_{in}$ is AI, ${\cal F}_{out}$ is AI, ${\cal F}_{in}\subseteq{\cal F}_{out}$, and if ${\cal F}_{out}\not\models p\not\sim q$ then $D$ should (at least) be an approximate bisimulation whenever $B$ is. The actual verification conditions are given in figure~\ref{figNewSysVerification}.
+
+\begin{figure}
+\begingroup\footnotesize
+\[
+\begin{array}{lll}
+\multicolumn{3}{l}{Bis(p,q,\overline{C},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+(\,(p,q)\in \overline{C}\;\wedge\; \overline{C}\subseteq{\cal B}(\overline{C})\,) \;\vee\\
+(\overline{{\cal F}_{out}}\models p\not\sim q)\;\wedge\;\overline{{\cal F}_{out}}  \mbox{ is AI}
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Cl(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B \;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}
+\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus (B\setminus \{(p,q)\})\subseteq {\cal B}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Ml(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+M\subseteq\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_M,q)\in{\cal L}(B)\;\wedge\;{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus B\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+
+\multicolumn{3}{l}{Mr(p,q,M,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}) \Leftrightarrow^{\Delta}}\\
+&&\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+N\subseteq\{(a,q')\mid q\der{a}q'\}\;\wedge\\
+(p,q_N)\in{\cal R}(B)\;\wedge\;{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+\\
+&&\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus B\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal R}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]\\
+\\
+\multicolumn{3}{l}{\mbox{where } p_M = \sum_{}\{(a.p'\mid p\der{a}p'\;\wedge\;(a,p')\not\in M\}.}
+
+\end{array}
+\]
+\endgroup
+\caption{Verification conditions for the new system.\label{figNewSysVerification}}
+\end{figure}
+
+Note that we in these verification conditions actually use a very weak notion of approximate bisimulations as we only require that $(p,q)\in B$ in order for $B$ to be an approximate bisimulation for $(p,q)$. This,  in fact, makes the verification conditions stronger than they would have been using the definition of approximate bisimulation.
+
+We are now able to prove that $Bis$, $Cl$, $Ml$, and $Mr$ are closed under the inference rules and thus we obtain the following {\em soundness\/} theorem
+
+\begin{theorem}[Soundness]\label{theoNewSysSoundness}
+\[
+bisim(p,q,\overline{C},\overline{{\cal F}_{out}})\Rightarrow\;\;
+\left[
+\begin{array}{l}
+(\,(p,q)\in \overline{C}\;\wedge\; \overline{C}\subseteq{\cal B}(\overline{C})\,) \;\vee\\
+(\overline{{\cal F}_{out}}\models p\not\sim q)\;\wedge\;\overline{{\cal F}_{out}}  \mbox{ is AI}
+\end{array}
+\right]
+\]
+\proof It is obvious that the four relations are mutually dependent, thus, in order to complete the soundness proof an (simultaneous) induction proof is needed. The induction principle associated with the inference system is straight forward (see~\cite{Aczel}) and the outline of the proof, naturally, resembles that of~\cite{Larsen}.
+
+The rules are considered in turn. (It is advisory to have the two figures~\ref{figNewSysInference} on page~\pageref{figNewSysInference} and~\ref{figNewSysVerification} on page~\pageref{figNewSysVerification} at hand while reading the proof).
+
+First a word of notation; throughout the following sections we will write $aCL$ instead of `the antecedent of $Cl$' and $cCl$ instead of `the conclusion of $Cl$'.
+
+\begin{trivlist}
+\setlength{\labelwidth}{.9cm}
+\item[\it Proof of rule\/ $B$:]
+We must show
+\[
+Cl(p,q,\{(p,q)\},\overline{C},\emptyset,\overline{{\cal F}_{out}}) \Rightarrow Bis(p,q,\overline{C},\overline{{\cal F}_{out}})
+\]
+or equivalently that
+\[
+Cl(p,q,\{(p,q)\},\overline{C},\emptyset,\overline{{\cal F}_{out}}) \Rightarrow\;
+\left[
+\begin{array}{l}
+(\,(p,q)\in \overline{C}\;\wedge\; \overline{C}\subseteq{\cal B}(\overline{C})\,) \;\vee\\
+(\overline{{\cal F}_{out}}\models p\not\sim q\;\wedge\;\overline{{\cal F}_{out}}  \mbox{ is AI})
+\end{array}
+\right]
+\]
+But this follows immediately from the definition of $Cl$ as
+\[
+aCl\; \left\{
+\begin{array}{l}
+(p,q) \in \{(p,q)\}\;\;\wedge\\
+\emptyset\mbox{ is AI}
+\end{array}
+\right\}
+\]
+clearly holds.
+
+\item[\it Proof of rule\/ $C_1$:]
+Assume that $aCL$, $aMl\Rightarrow cMl$, and $aMr\Rightarrow cMr$ holds. We must show that $cCl$ holds. First
+\[
+\begin{array}{ll}
+aCl &
+\left\{
+\begin{array}{l}
+(p,q)\in B \;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}
+\right\}\Rightarrow\\
+
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\;M\subseteq\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_M,q)\in{\cal L}(B)\;\wedge\;{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}
+\end{array}
+\]
+This follows immediately, as $M=\{(a,p')\mid p\der{a}p'\}$ by the side-condition and $(p_M,q) = (NIL,q)\in{\cal L}(B)$ as anything can simulate $NIL$. We must now prove that $aCl$, $aMl$ and
+\[
+\begin{array}{ll}
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{1}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{1}}\;\;\wedge\\
+(\overline{{\cal F}_{1}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{C}\; \wedge\; \overline{C}\setminus B\subseteq {\cal B}(\overline{C})\;\wedge\\
+(p,q)\in{\cal L}(\overline{C})
+\end{array}
+\right]\
+\end{array}
+\right]\;\Rightarrow\\
+
+aMr &
+\left\{
+\begin{array}{l}
+(p,q)\in C\;\wedge\;N\subseteq\{(a,q')\mid q\der{a}q'\}\;\wedge\\
+(p,q_N)\in{\cal R}(C)\;\wedge\;{\cal F}_{1} \mbox{ is AI}
+\end{array}
+\right\}
+\end{array}
+\]
+This follows from the side-condition, ${\cal F}_1\not\models p\not\sim q$, and from the fact that $(p,q)\in B$ according to $aMl$ and $B\subseteq C$ by $cMl$. Furthermore, $N=\{(a,q')\mid q\der{a}q'\}$ and $(p,q_N)=(p,NIL)\in {\cal R}(C)$. It now remains to show that $aCl$, $aMl$, $cMl$, $aMr$, and
+\[
+\begin{array}{ll}
+cMr &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{1}\subseteq\overline{{\cal F}_{out}}\;\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+C\subseteq \overline{D}\; \wedge\;\overline{D}\setminus C\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal R}(\overline{D})
+\end{array}
+\right]\\
+\end{array}
+\right]\\
+
+cCl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\;\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus (B\setminus \{(p,q)\})\subseteq {\cal B}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]
+\end{array}
+\]
+$\overline{{\cal F}_{out}}$ is AI by $cMr$. $\overline{{\cal F}_{in}}\subseteq\overline{{\cal F}_{out}}$ and $B\subseteq $ follows from $cMl$ and $cMr$. We can end this part of the proof by using the following rewriting
+\[
+D\setminus (B\setminus\{(p,q)\})\; =\;\;\;\;\; (D\setminus C)\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\;\cup\;\;\;\;\;\;\;\;\;\;(C\setminus B)\;\cup\;\{(p,q)\}
+\]
+\begin{center}
+\unitlength=1.000mm
+\begin{picture}(126.00,35.00)(0,0)
+%\rm\put(0.00,0.00){\framebox(126.00,35.00)[cc]{}}
+% D
+\put(32.00,29.00){\makebox(0,0)[cc]{$D$}} % D
+\put(20.00,14.00){\oval(36,26)} % D
+% B
+\put(20.00,10.00){\oval(10,8)} % B
+\put(26.00,14.00){\makebox(0,0)[cc]{$B$}} % B
+% (p,q)
+\put(20.00,08.00){\circle*{1}} % (p,q)
+
+% hatching D
+\multiput(06.20,02.00)(1.2,0){23}{\footnotesize .}
+\multiput(04.20,03.20)(1.2,0){26}{\footnotesize .}
+\multiput(03.90,04.40)(1.2,0){27}{\footnotesize .}
+\multiput(03.40,05.60)(1.2,0){11}{\footnotesize .}
+\multiput(24.40,05.60)(1.2,0){11}{\footnotesize .}
+\multiput(03.20,06.80)(1.2,0){10}{\footnotesize .}
+\multiput(24.60,06.80)(1.2,0){11}{\footnotesize .}
+\multiput(02.80,08.00)(1.2,0){10}{\footnotesize .}
+\multiput(25.20,08.00)(1.2,0){10}{\footnotesize .}
+\multiput(03.40,09.20)(1.2,0){9}{\footnotesize .}
+\multiput(25.80,09.20)(1.2,0){10}{\footnotesize .}
+\multiput(02.80,10.40)(1.2,0){10}{\footnotesize .}
+\multiput(25.20,10.40)(1.2,0){10}{\footnotesize .}
+\multiput(03.40,11.60)(1.2,0){9}{\footnotesize .}
+\multiput(25.80,11.60)(1.2,0){10}{\footnotesize .}
+\multiput(02.80,12.80)(1.2,0){10}{\footnotesize .}
+\multiput(27.20,12.80)(1.2,0){9}{\footnotesize .}
+\multiput(03.40,14.00)(1.2,0){11}{\footnotesize .}
+\multiput(27.80,14.00)(1.2,0){8}{\footnotesize .}
+\multiput(02.80,15.20)(1.2,0){18}{\footnotesize .}
+\multiput(27.20,15.20)(1.2,0){9}{\footnotesize .}
+\multiput(03.40,16.40)(1.2,0){29}{\footnotesize .}
+\multiput(02.80,17.60)(1.2,0){29}{\footnotesize .}
+\multiput(03.40,18.80)(1.2,0){29}{\footnotesize .}
+\multiput(02.80,20.00)(1.2,0){29}{\footnotesize .}
+\multiput(03.40,21.20)(1.2,0){29}{\footnotesize .}
+\multiput(02.80,22.40)(1.2,0){29}{\footnotesize .}
+\multiput(03.90,23.60)(1.2,0){27}{\footnotesize .}
+\multiput(04.20,24.80)(1.2,0){26}{\footnotesize .}
+\multiput(06.20,26.00)(1.2,0){23}{\footnotesize .}
+
+% Equivalence sign
+\multiput(40.00,14.00)(0,.5){3}{\line(1,0){2.0}}
+
+% D
+\put(73.00,29.00){\makebox(0,0)[cc]{$D$}} % D
+\put(62.00,14.00){\oval(36,26)} % D
+
+% C
+\put(70.00,21.00){\makebox(0,0)[cc]{$C$}} % C
+\put(54.00,04.00){\framebox(14,16)[cc]{}} % C
+
+% hatching D
+\multiput(48.20,02.00)(1.2,0){23}{\footnotesize .}
+\multiput(46.20,03.20)(1.2,0){26}{\footnotesize .}
+\multiput(45.00,04.40)(1.2,0){7}{\footnotesize .}\multiput(68.70,04.40)(1.2,0){8}{\footnotesize .}
+\multiput(44.70,05.60)(1.2,0){7}{\footnotesize .}\multiput(69.00,05.60)(1.2,0){8}{\footnotesize .}
+\multiput(45.00,06.80)(1.2,0){7}{\footnotesize .}\multiput(68.70,06.80)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,08.00)(1.2,0){7}{\footnotesize .}\multiput(69.00,08.00)(1.2,0){9}{\footnotesize .}
+\multiput(45.00,09.20)(1.2,0){7}{\footnotesize .}\multiput(68.70,09.20)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,10.40)(1.2,0){7}{\footnotesize .}\multiput(69.00,10.40)(1.2,0){9}{\footnotesize .}
+\multiput(45.00,11.60)(1.2,0){7}{\footnotesize .}\multiput(68.70,11.60)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,12.80)(1.2,0){7}{\footnotesize .}\multiput(69.00,12.80)(1.2,0){9}{\footnotesize .}
+\multiput(45.00,14.00)(1.2,0){7}{\footnotesize .}\multiput(68.70,14.00)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,15.20)(1.2,0){7}{\footnotesize .}\multiput(69.00,15.20)(1.2,0){9}{\footnotesize .}
+\multiput(45.00,16.40)(1.2,0){7}{\footnotesize .}\multiput(68.70,16.40)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,17.60)(1.2,0){7}{\footnotesize .}\multiput(69.00,17.60)(1.2,0){9}{\footnotesize .}
+\multiput(45.00,18.80)(1.2,0){7}{\footnotesize .}\multiput(68.70,18.80)(1.2,0){9}{\footnotesize .}
+\multiput(44.70,20.00)(1.2,0){7}{\footnotesize .}\multiput(71.40,20.00)(1.2,0){7}{\footnotesize .}
+\multiput(45.00,21.20)(1.2,0){20}{\footnotesize .}\multiput(71.70,21.20)(1.2,0){6}{\footnotesize .}
+\multiput(44.70,22.40)(1.2,0){20}{\footnotesize .}\multiput(71.40,22.40)(1.2,0){7}{\footnotesize .}
+\multiput(45.80,23.60)(1.2,0){27}{\footnotesize .}
+\multiput(46.20,24.80)(1.2,0){26}{\footnotesize .}
+\multiput(49.00,26.00)(1.2,0){21}{\footnotesize .}
+
+% plus sign
+\put(87.00,14.00){\line(1,0){2}} % +
+\put(88.00,15.00){\line(0,-1){2}} % +
+
+% C
+\put(112.00,21.00){\makebox(0,0)[cc]{$C$}} % C
+\put(96.00,04.00){\framebox(14,16)[cc]{}} % C
+
+% B
+\put(102.00,10.00){\oval(10,8)} % B
+\put(108.00,14.00){\makebox(0,0)[cc]{$B$}} % B
+
+% Hatching C
+\multiput(96.20,04.60)(1.2,0){11}{\footnotesize .}
+\multiput(96.60,05.80)(1.2,0){2}{\footnotesize .}\multiput(105.20,05.80)(1.2,0){4}{\footnotesize .}
+\multiput(96.20,07.00)(1.2,0){2}{\footnotesize .}\multiput(106.80,07.00)(1.2,0){2}{\footnotesize .}
+\multiput(107.20,08.20)(1.2,0){2}{\footnotesize .}
+\multiput(106.80,09.40)(1.2,0){2}{\footnotesize .}
+\multiput(96.20,10.60)(1.2,0){1}{\footnotesize .}\multiput(107.20,10.60)(1.2,0){2}{\footnotesize .}
+\multiput(96.60,11.80)(1.2,0){1}{\footnotesize .}\multiput(106.80,11.80)(1.2,0){2}{\footnotesize .}
+\multiput(96.20,13.00)(1.2,0){2}{\footnotesize .}
+\multiput(96.60,14.20)(1.2,0){9}{\footnotesize .}
+\multiput(96.20,15.40)(1.2,0){9}{\footnotesize .}
+\multiput(96.60,16.60)(1.2,0){11}{\footnotesize .}
+\multiput(96.20,17.80)(1.2,0){11}{\footnotesize .}
+\multiput(96.60,19.00)(1.2,0){11}{\footnotesize .}
+% plus sign
+\put(118.00,14.00){\line(1,0){2}} % +
+\put(119.00,15.00){\line(0,-1){2}} % +
+
+% (p,q)
+\put(124.00,08.00){\circle*{1}} % (p,q)
+
+\end{picture}
+\end{center}
+$D\setminus C\subseteq {\cal B}(D)$ by $cMr$, $(C\setminus B)\subseteq {\cal B}(C)$ by $cMl$, but $C\subseteq D$ by $cMr$ and $\cal B$ is monotone i.e.\@ $(C\setminus B)\subseteq {\cal B}(D)$. Notice, that $(p,q)\in {\cal L}(C)$ by $cMl$, $C\subseteq D$ by $cMr$ i.e.\@ $(p,q)\in D$ and by the monotony of $\cal L$ it follows that $(p,q)\in {\cal L}(D)$. Moreover, $(p,q)\in{\cal R}(D)$ by $cMr$ and as ${\cal B}(D) = {\cal L}(D)\cap {\cal R}(D)$, then $(p,q)\in {\cal B}(D)$, so we can conclude that $D\setminus (B\setminus\{(p,q)\})\subseteq {\cal B}(B)$.
+
+\item[\it Proof of rule\/ $C_2$:]
+Assume that $aCl$ and $aMl\Rightarrow cMl$ holds. We must show that $cCl$ holds. Trivially, we have $aCl\Rightarrow aMl$ (see proof of $C_1$). Then, due to the side-condition ${\cal F}_{out}\models p\not\sim q$, we only have to show that $aCl$, $aMl$, and
+\[
+\begin{array}{ll}
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}} \mbox{ is AI }\;\wedge\\
+{\cal F}_{in}\subseteq \overline{{\cal F}_{out}}
+\end{array}
+\right]\;\Rightarrow\\
+cCl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}} \mbox{ is AI }\;\wedge\\
+{\cal F}_{in}\subseteq \overline{{\cal F}_{out}}
+\end{array}
+\right]
+\end{array}
+\]
+which holds trivially. Note that this rule in fact is necessary; assume that we only had rule $C_1$ with the side-condition ${\cal F}_1\not\models p\not\sim q$ removed. Then we would not be able to state anything about $C$ in case ${\cal F}_{1}\models p\not\sim q$ and thus the system cannot be sound!
+
+\item[\it Proof of rule\/ $ML_1$:]
+We must show $Ml(p,q,\emptyset,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})$ i.e.\@
+\[
+\begin{array}{ll}
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+\emptyset\subseteq\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_\emptyset,q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{in}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{in}}\;\wedge\\
+(\overline{{\cal F}_{in}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{B}\; \wedge\\
+\overline{B}\setminus B\subseteq {\cal B}(\overline{B})\;\wedge\\
+(p,q)\in{\cal L}(\overline{B})
+\end{array}
+\right]
+\end{array}
+\right]
+
+\end{array}
+\]
+which clearly holds, as $(p_\emptyset,q)\in {\cal L}(B)\;\Leftrightarrow\;(p,q)\in{\cal L}(B)$. This rule is used whenever $M=\emptyset$ i.e.\@ there are no more derivations of $p$ left for $q$ to match.
+
+
+\item[\it Proof of rule\/ $ML_2$:]
+Assume that $aML$ and $aMl'\Rightarrow cMl'$ holds. (Note that we use a prime `$\,{}'$' to denote the second $Ml$-call in the rule). We must show that $cMl$ holds but as $cMl' = cMl$ it is sufficient to show $aMl\Rightarrow aMl'$, i.e.\@
+\[
+\begin{array}{ll}
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+\{(a,p')\}\cup M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{\{(a,p')\}\cup M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+
+aMl' &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}
+
+\end{array}
+\]
+Only $(p_M,q)\in{\cal L}(B)$ does not follow immediately. But note that
+\[
+p_M = p_{\{(a,p')\}\cup M} + a.p'
+\]
+and by the side-conditions for $ML_2$, $q\der{a}q'\;\wedge\;(p',q')\in B$, we see that $(a.p',q)\in{\cal L}(B)$ and thus we can conclude that $(p_M,q)\in{\cal L}(B)$. This rule is used whenever $q$ already has a match in $B$ for the derivation $(a,p')$.
+
+\item[\it Proof of rule\/ $ML_3$:]
+Assume that $aMl$, $aCl\Rightarrow cCl$, and $aMl'\Rightarrow cMl'$ holds. We must show that $cMl$ holds. First,
+\[
+\begin{array}{ll}
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+\{(a,p')\}\cup M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{\{(a,p')\}\cup M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\Rightarrow\\
+
+aCl &
+\left\{
+\begin{array}{l}
+(p',q')\in \{(p',q')\}\cup B \;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}
+\right\}\Rightarrow\\
+
+\end{array}
+\]
+which is trivially true. Furthermore, we must show that $aMl$, $aCl$, and
+\[
+\begin{array}{ll}
+cCl &
+\left[
+\begin{array}{l}
+{\cal F}_{in} \mbox{ is AI }\;\wedge\\
+{\cal F}_{in}\subseteq \overline{{\cal F}_{1}}\\
+\overline{{\cal F}_{1}}\not\models p\not\sim q
+\end{array}
+\right]\Rightarrow\\
+
+aMl' &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+\{(a,p')\}\cup M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{\{(a,p')\}\cup M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{1} \mbox{ is AI}
+\end{array}\right\}
+\end{array}
+\]
+which follows directly from the side-condition for $ML_3$, $cCl$, and $aMl$.
+(Notice how the side-condition simplifies $cCl$). We now just need to prove that $aMl$, $aCl$, $cCl$, $aMl'$, and
+\[
+\begin{array}{ll}
+cMl' &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{1}\subseteq\overline{{\cal F}_{out}}\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus B\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]\Rightarrow\\
+
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus B\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]
+
+\end{array}
+\]
+${\cal F}_{in}\subseteq{\cal F}_{1}$ according to $cCl$ and ${\cal F}_{1}\subseteq{\cal F}_{out}$ by $cMl'$, so ${\cal F}_{in}\subseteq{\cal F}_{out}$ holds. The rest follows trivially. Notice that this rule is used for one purpose only; to collect all information possible concerning equivalence of $p$'s and $q$'s derivations.
+
+
+\item[\it Proof of rule\/ $ML_4$:]
+Assume that $aMl$, $aCl\Rightarrow cCl$, and $aMl'\Rightarrow cMl'$ holds. then we must show that $cMl$ holds. Clearly, $aMl\Rightarrow aCl$ (see proof of $ML_3$). Thus we must prove that $aMl$, $aCl$, and (by the side-conditions of $ML_4$)
+\[
+\begin{array}{ll}
+cCl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{1}} \mbox{ is AI }\;\wedge\;{\cal F}_{in}\subseteq \overline{{\cal F}_{1}}\\
+\{(p',q')\}\cup B \subseteq \overline{C}\;\wedge\\
+\overline{C}\setminus(\; (B\cup\{(p',q')\}\setminus\{(p',q')\})\subseteq{\cal B}(\overline{C})\;)
+\end{array}
+\right]\Rightarrow\\
+
+aMl' &
+\left\{
+\begin{array}{l}
+(p,q)\in C\;\wedge\\
+M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_M,q)\in{\cal L}(C)\;\wedge\\
+{\cal F}_{1} \mbox{ is AI}
+\end{array}\right\}
+\end{array}
+\]
+$(p,q)\in B$ by $aMl$ and $B\subseteq C$ by $cCl$, so we have that $(p,q)\in C$. Only $(p_M,q)\in{\cal L}(C)$ does not follow immediately. Note that
+\[
+p_M = p_{\{(a,p')\}\cup M} + a.p'
+\]
+as by $aMl$ we know that $(p_{\{(a,p')\}\cup M},q)\in{\cal L}(B)$ and $B\subseteq C$ by $cCl$ and by the monotony of $\cal L$ we can thus deduce $(p_{\{(a,p')\}\cup M},q)\in{\cal L}(C)$. By $cCl$ we get $(p',q')\in C$ and in conjunction with the side-condition for rule $ML_4$, $q\der{a}q'$, we conclude that $(a.p',q)\in{\cal L}(C)$.
+
+\noindent
+In order to end the proof of rule $ML_4$, we must show that $aMl$, $aCl$, $cCl$, $aMl'$, and
+\[
+\begin{array}{ll}
+cMl' &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{1}\subseteq\overline{{\cal F}_{out}}\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+C\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus C\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]\Rightarrow\\
+
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\;\wedge\\
+(\overline{{\cal F}_{out}}\not\models p\not\sim q)\Rightarrow\;\;
+\left[
+\begin{array}{l}
+B\subseteq \overline{D}\; \wedge\\
+\overline{D}\setminus B\subseteq {\cal B}(\overline{D})\;\wedge\\
+(p,q)\in{\cal L}(\overline{D})
+\end{array}
+\right]
+\end{array}
+\right]
+\end{array}
+\]
+By $cCl$ we know that ${\cal F}_{in}\subseteq \overline{{\cal F}_{1}}$ and $cMl'$ gives us ${\cal F}_{1}\subseteq\overline{{\cal F}_{out}}$, i.e.\@ ${\cal F}_{in}\subseteq\overline{{\cal F}_{out}}$. Similarly, we get $B\subseteq D$. Finally,
+\[
+D\setminus B = (D\setminus C) \cup (C\setminus B)
+\]
+Now, $(D\setminus C)\subseteq{\cal B}(D)$ by $cMl'$. $(C\setminus B)\subseteq{\cal B}(C)$ by $cCl$ and $C\subseteq D$ by $cMl'$. By the monotony of $\cal B$ we therefore know that $(C\setminus B)\subseteq{\cal B}(D)$. so we can conclude that $(D\setminus B)\subseteq{\cal B}(D)$. This rule tries to `close' $B\cup\{(p',q')\}$ with respect to $(p',q')$ before dealing with the remaining derivations of $M$. (Backtracking may be necessary at this point should it later be discovered that $p'\not\sim q'$).
+
+\item[\it Proof of rule\/ $ML_5$:]
+We must prove $aMl\Rightarrow cMl$ i.e.\@ we must show that 
+\[
+\begin{array}{ll}
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+\{(a,p')\}\cup M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{\{(a,p')\}\cup M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\;\Rightarrow\\
+
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{out}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{out}}\;\wedge\\
+\overline{{\cal F}_{out}}\not\models p\not\sim q
+\end{array}
+\right]
+
+\end{array}
+\]
+Notice, that $cMl$ can be reduced as shown above as by the side-condition we know that ${\cal F}_{out}$ must contain a triple $(p,q,F)$ arguing the inequivalence of $p$ and $q$. The proof then follows immediately from the earlier discussed construction of ${\cal F}_{out}$ (see section~\ref{secProposalEnhance}). This rule is used to construct an argument for $p\not\sim q$ whenever $q$ cannot match the derivation $(a,p')$.
+
+\item[\it Proof of rule\/ $ML_6$:]
+We must prove that $aMl\Rightarrow cMl$ when ${\cal F}_{in}\models p\not\sim q$, i.e.\@ we get this reduced implication
+\[
+\begin{array}{ll}
+aMl &
+\left\{
+\begin{array}{l}
+(p,q)\in B\;\wedge\\
+M\;\subseteq\;\{(a,p')\mid p\der{a}p'\}\;\wedge\\
+(p_{M},q)\in{\cal L}(B)\;\wedge\\
+{\cal F}_{in} \mbox{ is AI}
+\end{array}\right\}\;\Rightarrow\\
+
+cMl &
+\left[
+\begin{array}{l}
+\overline{{\cal F}_{in}}  \mbox{ is AI} \;\wedge\;{\cal F}_{in}\subseteq\overline{{\cal F}_{in}}\;\wedge\\
+\overline{{\cal F}_{in}}\models p\not\sim q
+\end{array}
+\right]
+\end{array}
+\]
+This clearly holds. Thus, this rule is out `secret door' out whenever ${\cal F}_{in}$ already argues $p\not\sim q$.
+
+\item[\it Proof of rule\/ $MR_1$--$MR_6$:] Similar to $ML_1$--$ML_6$ and therefore omitted.
+\end{trivlist}
+\noindent
+This concludes the soundness proof of the inference system.
+\qed
+\end{theorem}
+
+By the above theorem we now know that whenever the $bisim$-predicate `succeeds' (terminates) this implies that the two processes in question are either equivalent---thus implying that $C$ is a bisimulation---or inequivalent---implying that ${\cal F}_{out}$ argues their inequivalence. We would, however, also like to be certain that no matter which process we choose the $bisim$-predicate {\em will\/} `succeed'. This is to say, that we would like the system to be {\em complete}.
+
+
+\subsection{Completeness}
+Before turning to the completeness proof of the system we will introduce some additional convenient concepts.
+\begin{definition}
+For $p\in Pr$ we define
+\[
+DER(p) = \{p'\in Pr\mid \exists s\in Act^*:p\der{s}p'\}
+\]
+which also will be defined on subsets $S$ of $Act\times Pr$, such that
+\[
+DER(S) = \{p'\in Pr\mid \exists (a,p)\in S\;\exists s\in Act^*:p\der{s}p'\}
+\]
+\qed
+\end{definition}
+\begin{definition}
+The proces system $\hbox{\bf P} = (Pr,Act,\der{})$ is finite iff $Pr$ and $Act$ both are finite.
+\qed
+\end{definition}
+\begin{definition}
+A process $p$ has {\em finite state-transition diagram\/} iff
+\[
+{\bf P}\downarrow DER(p)
+\]
+is a finite transition system.
+\qed
+\end{definition}
+Notice, that if $p$ has a finite state-transition diagram then $p$ will have a finite number of states and each state will have finite branching (i.e.\@ have a finite number of possible actions).
+
+Now, by using the induction principle associated with the inference system one more time, it is easy to show that the following finiteness conditions hold:
+\[
+\begin{array}{lll}
+\multicolumn{2}{l}{bisim(p,q,\overline{C},\overline{{\cal F}_{out}})\;\Rightarrow}&
+\overline{C}\mbox{ and }\overline{{\cal F}_{out}}\mbox{ are finite}\\
+\\
+\multicolumn{2}{l}{closure(p,q,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\;\Rightarrow}\\
+&\left\{\begin{array}{l} B\mbox{ is finite}\;\wedge\\ {\cal F}_{in}\mbox{ is finite}\end{array}\right\}\;\Rightarrow &
+\overline{C}\mbox{ and }\overline{{\cal F}_{out}}\mbox{ are finite}\\
+\\
+\multicolumn{2}{l}{matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\;\Rightarrow}\\
+&\left\{\begin{array}{l} B\mbox{ is finite}\;\wedge\\  M\mbox{ is finite}\;\wedge\\ {\cal F}_{in}\mbox{ is finite}\end{array}\right\}\;\Rightarrow &
+\overline{C}\mbox{ and }\overline{{\cal F}_{out}}\mbox{ are finite}\\
+\\
+\multicolumn{2}{l}{matchr(p,q,N,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\;\Rightarrow}\\
+&\left\{\begin{array}{l} B\mbox{ is finite}\;\wedge\\  N\mbox{ is finite}\;\wedge\\ {\cal F}_{in}\mbox{ is finite}\end{array}\right\}\;\Rightarrow &
+\overline{C}\mbox{ and }\overline{{\cal F}_{out}}\mbox{ are finite}\\
+\end{array}
+\]
+However, this fact causes troubles as the most direct way to show the completeness of the system, i.e.\@ to show the following inclusions:
+\[
+\begin{array}{l@{\;\;\subseteq\;\;}l@{\;\;\;\;\;\;\;\;\;\;\;\;}l@{\;\;\subseteq\;\;}l}
+Bis & bisim    & Ml & matchl\\
+Cl  & closure  & Mr & matchr 
+\end{array}
+\]
+is not possible, because $Bis$, $Cl$, $Ml$, and $Mr$ do not satisfy these finiteness conditions. Therefore, the above inclusions are not valid.
+
+We will, however, be content with the inclusions to hold whenever the preconditions of the verification conditions hold and the size of the input-arguments are within appropriate limits. We will thus be content if implications of the following kind hold:
+\[
+\left[
+\begin{array}{l}
+aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\|\;\mbox{input-arguments}\;\|\;\leq n
+\end{array}
+\right]\;\;\Rightarrow\;\;
+\exists C\exists{\cal F}_{out}: closure(p,q,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+The size-function for each of the verification conditions is defined by:
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Bis}(p,q,\underline{\ \ },\underline{\ \ }) =}\\
+&&& \|\, DER(p)\times DER(q) \,\| \\
+\\
+\multicolumn{4}{l}{\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) =}\\
+&&& \|\, DER(p)\times DER(q) \setminus B\setminus\{(p,q)\mid(p,q,F)\in{\cal F}_{in}\}\,\| +1\\
+\\
+\multicolumn{4}{l}{\sharp_{Ml}(\underline{\ \ },q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) =}\\
+&&& \|\, DER(M)\times DER(q) \setminus B\setminus\{(p,q)\mid(p,q,F)\in{\cal F}_{in}\}\,\| +1\\
+\\
+\multicolumn{4}{l}{\sharp_{Mr}(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) =}\\
+&&& \|\, DER(N)\times DER(p) \setminus B\setminus\{(p,q)\mid(p,q,F)\in{\cal F}_{in}\}\,\| +1\\
+\\
+\end{array}
+\]
+Notice, the size functions depend only on the input-arguments---which is why the other arguments are just indicated by an `$\underline{\ \ }$'. For $\sharp_{Cl}$, for instance, we have that $DER(p)\times DER(q)$ is a set of state-pairs to investigate. $B$ is the already constructed part of the bisimulation, i.e.\@ all pairs $(p,q)\in B$ do not be processed again. $\{(p,q)\mid (p,q,F)\in {\cal F}_{in}\}$ is the set of state-pairs already found to be inequivalent so they do not need any further processing either. $DER(p)\times DER(q) \setminus B\setminus\{(p,q)\mid(p,q,F)\in{\cal F}_{in}\}$ is thus the maximal set of state-pairs which remains to be investigated. Also, note that $\sharp_{Ml}$ ($\sharp_{Mr}$) is independent of input-argument $p$ ($q$), instead the set of derivations $M$ ($N$) of $p$ ($q$) each of which has not yet been matched by a derivation of $q$ ($p$) is used.
+
+We claim the inference system is complete for processes with finite state-transition diagram. This claim will follow as a corollary from the following theorem.
+
+\begin{theorem}\label{theoCompleteness}
+If the processes $p$ and $q$ have finite state-transition diagrams, then $\forall n\geq 1$:
+\[
+\begin{array}{llll}
+\mbox{1) } &
+\multicolumn{3}{l}{\left[\;
+\sharp_{Bis}(p,q,\underline{\ \ },\underline{\ \ }) \leq n
+\;\right]\;\;\Rightarrow}\\
+&&& \exists C\exists {\cal F}_{out}: bisim(p,q,\overline{C},\overline{{\cal F}_{out}})\\
+\\
+
+\mbox{2) } &
+\multicolumn{3}{l}{\left[\;
+\begin{array}{l}
+aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\;\right]\;\;\Rightarrow}\\
+&&& \exists C\exists {\cal F}_{out}: closure(p,q,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\\
+\\
+
+\mbox{3) } &
+\multicolumn{3}{l}{\left[\;
+\begin{array}{l}
+aMl(\underline{\ \ },q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Ml}(\underline{\ \ },q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\;\right]\;\;\Rightarrow}\\
+&&& \exists C\exists {\cal F}_{out}: matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\\
+\\
+
+\mbox{4) } &
+\multicolumn{3}{l}{\left[\;
+\begin{array}{l}
+aMr(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Mr}(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\;\right]\;\;\Rightarrow}\\
+&&& \exists C\exists {\cal F}_{out}: matchr(p,q,N,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{out}})\\
+\\
+
+\end{array}
+\]
+\proof
+We will prove the theorem by proving the implications---starting with (4) ending with (1)---by induction on $n$, with sub induction on $\|\,M\,\|$ ($\|\,N\,\|$) for (4) and (3). Thus is each step we will first establish (4) and (3), use these results for establishing (2) from witch (1) easily follows.
+
+\noindent
+$n = 1$:
+
+We must prove that the implications (4)--(1) hold for $n=1$.
+
+\begin{trivlist}
+\setlength{\labelwidth}{1.1cm}
+\item[\rm (4):] Proved by sub induction on the size of $N$ ($\|\,N\,\|$). So assume
+\[
+\begin{array}{l}
+\left.\;
+\begin{array}{l}
+aMr(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Mr}(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq 1
+\end{array}
+\;\right\}\;\;\Rightarrow\\
+\\
+(DER(p)\times DER(N) \setminus B)\setminus\{(p,q)\mid {\cal F}_{in}\models p\not\sim q\}\,= \emptyset\,\Leftrightarrow\\
+\\
+DER(p)\times DER(N) \subseteq B\cup\{(p,q)\mid {\cal F}_{in}\models p\not\sim q\}
+\end{array}
+\]
+
+\noindent
+$\|\,N\,\| = 0$: Ok, as inference rule $MR_1$ (which is an axiom) is applicable.\hfill\hbox{}\linebreak[4]
+{\it Sub induction hypothesis:\/} Implication (4) holds for $\|\,N\,\| = m$.\hfill\hbox{}\linebreak[4]
+{\it Sub step $N = N'\cup\{(a,q')\}$ where $\|\,N\,\| = m+1$, $\|\,N'\,\| = m$:\/} 
+Thus, we assume that (4) holds for $N'$.
+
+\noindent
+Now, if ${\cal F}_{in}\models p\not\sim q$, then all is well, as we simply apply rule (axiom) $MR_6$ obtaining
+\[
+matchr(p,q,N,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{in}})
+\]
+So assume that ${\cal F}_{in}\not\models p\not\sim q$ and $p\der{a}q$ such that $(p',q')\in B$. Then the side-conditions of rule $MR_2$ are satisfied and clearly
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,\underline{\ \ },N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) = 1
+\end{array}
+\]
+From the soundness proof we know
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{aMr(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\Rightarrow}\\
+&&& aMr(p,\underline{\ \ },N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })
+\end{array}
+\]
+Thus by the sub induction hypothesis ($\|\,N'\,\|<\|\,N\,|$) we have that
+\[
+matchr(p,q,N',B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds for some $D$ and ${\cal F}_{out}$. Then using $MR_2$ we have that the predicate
+\[
+matchr(p,q,\{(a,q')\}\cup N',B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds.
+
+\noindent
+Assume ${\cal F}_{in}\not\models p\not\sim q$ and $(p',q')\not\in B$ for $p\der{a}p'$. As $n=1$ (by induction hypothesis) we thus have that
+\[
+(p',q')\;\in\; DER(p)\times DER(q)\;\subseteq\; B\cup\{(p,q)\mid{\cal F}_{in}\models p\not\sim q\}
+\]
+which gives us ${\cal F}_{in}\models p'\not\sim q'$. Thus, rules $MR_3$ and $MR_4$ are not applicable. However, rule $MR_5$ can be applied. Moreover, this rule is an axiom, so
+\[
+matchr(p,q,N,B,\overline{B},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds for ${\cal F}_{out}$ constructed as discussed in section~\ref{secProposalEnhance}.
+
+\noindent
+This concludes the proof of implication (4) for $n=1$.
+
+\item[\rm (3):] Similar to the proof of (4).
+
+\item[\rm (2):]  
+We have shown that (4) and (3) holds for $n=1$. We must show that (2) holds for $n=1$. So assume
+\[
+\left[\begin{array}{l}
+aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq 1
+\end{array}\right]
+\]
+From the soundness proof we know
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\Rightarrow}\\
+&&& aMl(p,q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })
+\end{array}
+\]
+Clearly, $DER(M)\leq DER(p)$ so
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Ml}(\underline{\ \ },q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq 1
+\end{array}
+\]
+Since implication (3) has already been established for $n=1$, we have for some $C$ and ${\cal F}_{1}$ that
+\begin{equation}\label{eqMatchl}
+matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})
+\end{equation}
+holds. If ${\cal F}_{1}\models p\not\sim q$ then by using $C_2$ we can establish
+\[
+closure(p,q,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})
+\]
+Otherwise, we know from the soundness that ${\cal F}_{in}\subseteq{\cal F}_{1}$ and $B\subseteq C$ so
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,q,N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Ml}(p,q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq 1
+\end{array}
+\]
+Thus from implication (4) we have for some $D$ and ${\cal F}_{out}$ that
+\begin{equation}\label{eqMatchr}
+matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})
+\end{equation}
+holds. Thus, by using rule $C_1$ on~\ref{eqMatchl} and~\ref{eqMatchr} we obtain
+\[
+closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+
+
+\item[\rm (1):]
+Follows from (2) as
+\[
+\sharp_{Cl}(p,q,\{(p,q)\},\underline{\ \ },\emptyset,\underline{\ \ }) \leq
+\sharp_{Bis}(p,q,\underline{\ \ },\underline{\ \ }) \leq 1
+\]
+so for some  $C$ and ${\cal F}_{out}$
+\[
+closure(p,q,\{(p,q)\},\overline{C},\emptyset,\overline{{\cal F}_{out}})
+\]
+holds and thus
+\[
+bisim(p,q,\overline{C},\overline{{\cal F}_{out}})
+\]
+can be established by using rule $B$.
+
+\noindent
+Thus we have completed the proof for $n=1$.
+
+\end{trivlist}
+
+\noindent
+{\it Induction hypothesis:\/} Implications (4)--(1) holds for $n = k$.\hfill\hbox{}\linebreak[4]
+{\it Step $n = k+1$:\/}\hfill\hbox{}\linebreak[4]
+
+We must show that the implications hold for the case $n=k+1$ under the induction hypothesis.
+
+\begin{trivlist}
+\setlength{\labelwidth}{1.1cm}
+\item[\rm (4):] 
+Again, proved by sub induction on the size of N ($\|\,N\,\|$). So assume
+\[\left[
+\begin{array}{l}
+aMr(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Mr}(p,\underline{\ \ },N,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq\;k+1
+\end{array}
+\right]\]
+
+\noindent
+{\it $\|\,N\,\|=0$:\/} Ok, as inference rule $MR_1$ (which is an axiom) is applicable.\hfill\hbox{}\linebreak[4]
+
+\noindent
+{\it Sub induction hypothesis:\/} Implication (4) holds for $\|\,N\,\| = m$.\hfill\hbox{}\linebreak[4]
+{\it Sub step $N = N'\cup\{(a,q')\}$ where $\|\,N\,\| = m+1$, $\|\,N'\,\| = m$:\/}\hfill\hbox{}\linebreak[4]
+
+\noindent
+Thus, we assume that (4) holds for $N'$.
+
+\noindent
+Now, if ${\cal F}_{in}\models p\not\sim q$, then all is well, as we simply apply rule (axiom) $MR_6$.
+
+\noindent
+So assume that ${\cal F}_{in}\not\models p\not\sim q$ and $p\der{a}q$ such that $(p',q')\in B$. Then the side-conditions of rule $MR_2$ are satisfied and clearly
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,\underline{\ \ },N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+From the soundness proof we know
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{aMr(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\Rightarrow}\\
+&&& aMr(p,\underline{\ \ },N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })
+\end{array}
+\]
+Now, by the sub induction hypothesis ($\|\,N'\,\|<\|\,N\,|$) we have that
+\[
+matchr(p,q,N',B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds for some $D$ and ${\cal F}_{out}$. Then using $MR_2$ we have that the predicate
+\[
+matchr(p,q,\{(a,q')\}\cup N',B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds.
+
+\noindent
+If ${\cal F}_{in}\models p'\not\sim q'$ for all $p'$ such that $p\der{a}p'$ then we simply use rule (axiom) $MR5$.
+
+\noindent
+Otherwise, let $p\der{a}p'$ such that ${\cal F}_{in}\not\models p\not\sim q$. Then either $MR_3$ or $MR_4$ is applicable. The thus have that
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Cl}(p',q',\{(p',q')\}\cup B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+as $\|\;B\;\|\leq\|\;\{(p',q')\}\cup B\;\|$ and by the soundness proof
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{aMr(p,q,\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\Rightarrow}\\
+&&& aCl(p',q',\{(p',q')\}\cup B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })
+\end{array}
+\]
+Thus, by the induction hypothesis we have that
+\begin{equation}\label{eqClosure}
+closure(p',q',\{(p',q')\}\cup B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})
+\end{equation}
+holds for some  $C$ and ${\cal F}_{1}$.
+
+\noindent
+Assume ${\cal F}_{1}\models p\not\sim q$, then $MR_3$ is applicable and clearly
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{1},\underline{\ \ })\;<}\\
+&&&\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+as $\|\;{\cal F}_{in}\,\| < \|\;{\cal F}_{1}\,\|$. Furthermore, from the soundness proof we know that
+\[
+aMr(p,q,\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{1},\underline{\ \ })\]
+holds and thus by the induction hypothesis
+\begin{equation}\label{eqMatchrI}
+matchr(p,q,\{(a,q')\}\cup N',B,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})
+\end{equation}
+holds for some $D$ and ${\cal F}_{out}$. So by using $MR_3$ on~\ref{eqClosure} and~\ref{eqMatchrI} we have that
+\[
+matchr(p,q,\{(a,q')\}\cup N',B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}}\]
+holds.
+
+\noindent
+However, if ${\cal F}_{1}\not\models p'\not\sim q'$, then rule $MR_4$ is applicable and from the soundness we have that $B\subset C$ and ${\cal F}_{in}\subseteq{\cal F}_1$ so clearly
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,\underline{\ \ },N',C,\underline{\ \ },{\cal F}_{1},\underline{\ \ })\;<}\\
+&&&\sharp_{Mr}(p,\underline{\ \ },\{(a,q')\}\cup N',B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+Again, from the soundness proof we know that
+\[
+aMr(p,q,N',C,\underline{\ \ },{\cal F}_{1},\underline{\ \ })
+\]
+holds. Thus, by the sub induction hypothesis we have that
+\begin{equation}\label{eqMatchrII}
+matchr(p,q,N',C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})
+\end{equation}
+holds for some $D$ and ${\cal F}_{out}$. Finally, by using rule $MR_4$ on~\ref{eqClosure} and~\ref{eqMatchrII} we establish
+\[
+matchr(p,q,\{(a,q')\}\cup N',C,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+
+
+\noindent
+This completes the proof of implication (4).
+\end{trivlist}
+
+
+\item[\rm (3):] Similar to the proof of (4). 
+
+
+\item[\rm (2):] 
+We have shown that (4) and (3) hold for $n\leq k+1$. We must now show that (2) hold for $n\leq k+1$. So assume
+\[
+\left[\begin{array}{l}
+aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\wedge\\
+\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq n
+\end{array}\right]
+\]
+From the soundness proof we get
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{aCl(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\Rightarrow}\\
+&&& aMl(p,q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })
+\end{array}
+\]
+Clearly, $DER(M)\leq DER(p)$ so
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Ml}(\underline{\ \ },q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Cl}(p,q,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+Since implication (3) has already been established for $n=k+1$, we have for some $C$ and ${\cal F}_{1}$ that
+\begin{equation}\label{eqMatchlIII}
+matchl(p,q,M,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})
+\end{equation}
+holds. If ${\cal F}_{1}\models p\not\sim q$ then by using $C_2$ we can establish
+\[
+closure(p,q,B,\overline{C},{\cal F}_{in},\overline{{\cal F}_{1}})
+\]
+Otherwise, we know from the soundness that ${\cal F}_{in}\subseteq{\cal F}_{1}$ and $B\subseteq C$ so
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{\sharp_{Mr}(p,q,N,C,\underline{\ \ },{\cal F}_{in},\underline{\ \ })\;\leq}\\
+&&&\sharp_{Ml}(p,q,M,B,\underline{\ \ },{\cal F}_{in},\underline{\ \ }) \leq n
+\end{array}
+\]
+Thus from implication (4) we have for some $D$ and ${\cal F}_{out}$ that
+\begin{equation}\label{eqMatchrIII}
+matchr(p,q,N,C,\overline{D},{\cal F}_{1},\overline{{\cal F}_{out}})
+\end{equation}
+holds for some $D$ and ${\cal F}_{out}$. Thus, by using rule $C_1$ on~\ref{eqMatchlIII} and~\ref{eqMatchrIII} we have that
+\[
+closure(p,q,B,\overline{D},{\cal F}_{in},\overline{{\cal F}_{out}})
+\]
+holds.
+
+\item[\rm (1):] 
+Follows from (2) as
+\[
+\sharp_{Cl}(p,q,\{(p,q)\},\underline{\ \ },\emptyset,\underline{\ \ }) \leq
+\sharp_{Bis}(p,q,\underline{\ \ },\underline{\ \ }) \leq n
+\]
+so for some  $C$ and ${\cal F}_{out}$
+\[
+closure(p,q,\{(p,q)\},\overline{C},\emptyset,\overline{{\cal F}_{out}})
+\]
+holds and thus
+\[
+bisim(p,q,\overline{C},\overline{{\cal F}_{out}})
+\]
+can be established by using rule $B$.
+
+\noindent
+Thus we have completed the proof for $n=k+1$ and thus established that implications (1)--(4) are valid for all $n$ which completes the proof.
+\qed
+\end{theorem}
+
+As the above theorem states the inference system will be able to either find a bisimulation $C$ of $p$ and $q$ in case they are equivalent, or find a reason why they are inequivalent, ${\cal F}_{out}\models p\not\sim q$, if $p$ and $q$ have finite state-transition diagrams. However, as each bisimulation $C$ containing the pair $(p,q)$ also must contain a pair for each derivative of $p$ ($q$), the inference system cannot be complete if $p$ and/or $q$ have infinitely many derivations ($\|\,DER(p)\,\|$ is infinite). By the definition of $matchl$ ($matchr$) we see, that each of $p$'s ($q$'s) derivations must have finite branching in order for the inference system to be complete as $M$ ($N$) is at most reduced by one element in each call.
+
+We are now ready to state the following completeness result.
+\begin{corollary}[Completeness]
+For all processes $p$ and $q$ having finite state-transition diagrams we have
+\[
+\exists C\exists{\cal F}_{out}:bisim(p,q,\overline{C},\overline{{\cal F}_{out}})
+\]
+\proof
+Follows immediately from theorem~\ref{theoCompleteness}.
+\qed
+\end{corollary}
+
+\noindent
+Moreover, from the soundness we know that
+\[
+\begin{array}{llll}
+\multicolumn{4}{l}{bisim(p,q,\overline{C},\overline{{\cal F}_{out}})\,\Rightarrow}\\
+\\
+&&& p\sim q\;\;\Rightarrow\;\;C \mbox{ is a bisimulation}\\
+&&& p\not\sim q\;\;\Rightarrow\;\;{\cal F}_{out}\models p\not\sim q
+\end{array}
+\]
+
+We have now established proofs of soundness and restricted completeness of the inference system of figure~\ref{figNewSysInference}. In the next section we will present the PROLOG-implementation of the system and demonstrate its usefulness through several examples.
+% end of chapter
+

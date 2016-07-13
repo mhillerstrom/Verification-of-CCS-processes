@@ -1,0 +1,17 @@
+% Pseudo security
+%\immediate\special{!security O=SemiSecurity1987,P+,A+}
+
+% Other PDF tags
+\def\pdfinfo#1#2#3#4{% Author, Subject, Title, Keywords
+   \toks2={#1}\edef\pdfAuthor{\special{!pdfinfo a=<\the\toks2>}}%
+   \toks2={#2}\gdef\pdfSubject{\special{!pdfinfo s=<\the\toks2>}}%
+   \toks2={#3}\edef\pdfTitle{\special{!pdfinfo t=<\the\toks2>}}%
+   \toks2={#4}\edef\pdfKeywords{\special{!pdfinfo k=<\the\toks2>}}%
+   \gdef\pdfPageMode{\special{!pdfinfo p=</UseOutLines>}}%
+   \pdfAuthor%
+   \pdfTitle%
+   \pdfSubject%
+   \pdfKeywords%
+%   \pdfPageMode%
+}
+
