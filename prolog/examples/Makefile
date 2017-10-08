@@ -1,7 +1,8 @@
-PROLOG=/usr/bin/swipl
+PROLOG=/usr/local/bin/swipl --traditional -s
 AWK=/usr/bin/gawk
 AWKPROG=../../splitlines.awk
 AWKARGS=-v SPLITCHARS="+/ \\\\;" -v LMAX=80 -v LMIN=50 -f 
+TMPPL=/tmp/${USER}switmp.pl
 SOURCES=ex1.pl ex2.pl ex3.pl ex4.pl ex5.pl ex6.pl ex7.pl ex8.pl ex9.pl ex10.pl \
      ex11.pl ex12.pl ex13.pl ex14.pl ex15.pl ex16.pl ex17.pl ex18.pl ex19.pl ex20.pl \
      ex21.pl
@@ -23,5 +24,7 @@ clean:
 	../../mksnipplets.sh $< .
 
 .pl.out:
-	$(PROLOG) -s $< 2>/dev/null | sed '1,/!out!/d' | $(AWK) $(AWKARGS) $(AWKPROG) >$*.out
+	cat init.pl $< >${TMPPL}	# Necessary due to SWI-prologs new std.
+	$(PROLOG) ${TMPPL} | sed '1,/!out!/d' | $(AWK) $(AWKARGS) $(AWKPROG) >$*.out
+	rm ${TMPPL}
 
