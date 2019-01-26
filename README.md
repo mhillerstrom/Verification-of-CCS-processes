@@ -11,7 +11,7 @@ The material herein is an author re-type
 with very few changes from the original.
 Only some mis-spellings and missing
 punctuation marks, corrected indices
-etc. Also, all pictures have been re-
-drawn using LaTeX picture environment.
+etc. Also, all pictures have been redrawn
+using LaTeX picture environment.
 
 Enjoy!
