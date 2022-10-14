@@ -216,7 +216,7 @@ $B$ &
 We want to find a bisimulation $C$ containing the pair $(p,q)$. We are starting off from `nothing' i.e.\@, we do not know whether $p\sim q$ is true or not. Also, we have no knowledge of any other processes being (in)equivalent, i.e.\@ ${\cal F}_{in}=\emptyset$. So, we assume that $p\sim q$, i.e.\@ $(p,q)\in B$ ($= \{(p,q)\}$) and try to `close' $\{(p,q)\}$ with respect to $(p,q)$. If this is not possible ${\cal F}_{out}\models p\not\sim q$.\\
 \multicolumn{2}{l}{}\\
 $C$ &
-We will try to `close' $B$ with respect to $(p,q)$. This can be achieved by first assuring $C$ is $B$'s closure with respect to $p$'s derivations, $M$, and then in turn clode C with respect to $q$'s derivations, $N$, to obtain $D$ using $C_1$. If $B$ cannot be closed with respect to $p$'s derivations, then ${\cal F}_1\models p\not\sim q$ which is reported back through ${\cal F}_{out}$ of $C_2$.\\
+We will try to `close' $B$ with respect to $(p,q)$. This can be achieved by first assuring $C$ is $B$'s closure with respect to $p$'s derivations, $M$, and then in turn close C with respect to $q$'s derivations, $N$, to obtain $D$ using $C_1$. If $B$ cannot be closed with respect to $p$'s derivations, then ${\cal F}_1\models p\not\sim q$ which is reported back through ${\cal F}_{out}$ of $C_2$.\\
 \multicolumn{2}{l}{}\\
 $ML_1$ &
 If $M=\emptyset$ then $B$ is already closed with respect to $p$'s derivations and $B$ is returned as the `new' closure. Also, we have gained no further knowledge concerning inequivalence of processes, so we simply return ${\cal F}_{in}$ as our new knowledge.\\

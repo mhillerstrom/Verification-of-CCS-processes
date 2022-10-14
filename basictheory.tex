@@ -6,23 +6,23 @@
 
 CSS, which is short for Calculus of Communicating Systems, originate from the work of Robin Milner \cite{Milner}. CCS can be considered as based upon the traditional theory of finite automata. In CCS, however, the external behaviour of a process is considered more important than the internal behaviour. In fact, in CCS one wants to make an abstraction from the internal behaviour.
 
-The calculus is founded on two central ideas, The first being {\it observation\/} and the other {\it synchronized communication}. The aim is to describe a concurrent system fully enough to determine exactly what behaviour will be seen or experienced by an external observer i.e.\@ two systems are indistinguisable if we cannot tell them apart without pulling them apart. (Later on the formal definition of {\it observational equivalence\/} and some of its properties will be stated).
+The calculus is founded on two central ideas, The first being {\it observation\/} and the other {\it synchronized communication}. The aim is to describe a concurrent system fully enough to determine exactly what behaviour will be seen or experienced by an external observer i.e.\@ two systems are indistinguishable if we cannot tell them apart without pulling them apart. (Later on the formal definition of {\it observational equivalence\/} and some of its properties will be stated).
 
-This, however, does not prevent us ffrom studying the structure of systems and as every interesting concurrent system is built from independent agents (programs/processes) which communicate, this leads us to synchronized communication. Communication between two agents is regarded as ana indivisable action of the composit system in CCS and the central operation of the algebra of systems is {\it concurrent composition}, a binary operation which compose two independent agents, allowing them to communicate.
-Note, when we compose two agents it is synchronization of their mutual communication which determines the composite; we treat their independent actions as occuring in arbitrary order but {\it not\/} simultaneously.
+This, however, does not prevent us from studying the structure of systems and as every interesting concurrent system is built from independent agents (programs/processes) which communicate, this leads us to synchronized communication. Communication between two agents is regarded as an indivisible action of the composite system in CCS and the central operation of the algebra of systems is {\it concurrent composition}, a binary operation which compose two independent agents, allowing them to communicate.
+Note, when we compose two agents it is synchronization of their mutual communication which determines the composite; we treat their independent actions as occurring in arbitrary order but {\it not\/} simultaneously.
 
-These two ideas can in fact be unified as on one hand the only way to observe a system is to communicate with it, which makes the observer and system together a larger system. On the other hand, to place two components in communication (i.e.\@ to compose them) is just to let them obseve each other. If observing and communicating are the same, it follows that one cannot observe a system without its participation.
+These two ideas can in fact be unified as on one hand the only way to observe a system is to communicate with it, which makes the observer and system together a larger system. On the other hand, to place two components in communication (i.e.\@ to compose them) is just to let them observe each other. If observing and communicating are the same, it follows that one cannot observe a system without its participation.
 
 Since a program or a system in CCS is just a term of the calculus, the structure of the program or system (its {\it intension\/}) is reflected in the structure of the term. We will now turn to the syntax and operational semantics of terms in CCS.
 
 
 \subsection{Syntax and operational semantics}
 
-In this section the syntax and operational semantics of CCS-terms (henceforth called agnts, CCS-processes or processes for short) in terms of a labelled transition system \cite{Plotkin} will be introduced formally. We will restrict this presentation to a subset of CCS as this suffices for our purposes. A full treatment of CCS can be found in \cite{Milner}.
+In this section the syntax and operational semantics of CCS-terms (henceforth called agents, CCS-processes or processes for short) in terms of a labelled transition system \cite{Plotkin} will be introduced formally. We will restrict this presentation to a subset of CCS as this suffices for our purposes. A full treatment of CCS can be found in \cite{Milner}.
 
 The system of CCS-processes is closed under {\it action prefixing\/} and {\it binary summation}. Apart from this, CCS-processes are built from a number of operations, namely the {\it parallel operator}, the {\it restriction operator}, and the {\it renaming operator}.
 
-The {\it parallel operator}, $\mid$, represents the parallel composition of two processes, enabeling communication to occur between them. Furthermore, the parallel operator also allows the processes behaviours to interleave freely.
+The {\it parallel operator}, $\mid$, represents the parallel composition of two processes, enabling communication to occur between them. Furthermore, the parallel operator also allows the processes behaviours to interleave freely.
 
 Together with the $\mid$-operator a structure on the {\it action set Act\/} is introduced; it is assumed that {\it Act\/} is the disjoint union of these sets $\Delta$, $\overline{\Delta}$ and $\{\tau\}$. $\Delta$ is a (fixed) set of {\it names\/} and $\overline{\Delta}$ is a set of {\it co-names\/}, disjoint from $\Delta$ and in bijection with it, the bijection being
 \begin{equation}
@@ -30,7 +30,7 @@ Together with the $\mid$-operator a structure on the {\it action set Act\/} is i
 \end{equation}
 and $\overline{\alpha}$ is the co-name of $\alpha$, and the inverse bijection is $\overline{\overline{\alpha}} = \alpha$. $\alpha\in\Delta$ ($\overline{\alpha}\in\overline{\Delta}$) is also called the {\it complementary action\/} of $\overline{\alpha}\in\overline{\Delta}$ ($\alpha\in\Delta$).
 
-Communication between two processes in parallel may then take place if they can perform complementary actions. As a result of the communication the combined system will perform a $\tau$-action (often called an `invisible', `silent', or `internal' action). $\tau$-actions are also used to model nondeterministic bahaviour of agents.
+Communication between two processes in parallel may then take place if they can perform complementary actions. As a result of the communication the combined system will perform a $\tau$-action (often called an `invisible', `silent', or `internal' action). $\tau$-actions are also used to model nondeterministic behaviour of agents.
 
 The second sort of operator was the {\it restriction operator}, $\setminus S$ where $S\subseteq\Delta$, which restricts a process' actions not to include actions belonging to the set $S\cup\overline{S}$. The restriction operator is useful for ensuring that certain communications of processes composed by the $\mid$-operator occur internally.
 
@@ -63,7 +63,7 @@ p::= & NIL          & inaction \\
 \caption{Syntax of CCS-processes.}\label{figCCSproc}
 \end{figure}
 
-In order to obtain an {\it image-finite\/} process system (see corollary~\ref{corImageFinite}) a syntactic restriction is imposed on $X :=: p_X$, namely that $X$ should be guarded in $p_X$ i.e.\@ every occurence of $X$ in $p_X$ is within some subexpression $\alpha.p'$ of $p_X$, where $\alpha\in Act$.
+In order to obtain an {\it image-finite\/} process system (see corollary~\ref{corImageFinite}) a syntactic restriction is imposed on $X :=: p_X$, namely that $X$ should be guarded in $p_X$ i.e.\@ every occurrence of $X$ in $p_X$ is within some subexpression $\alpha.p'$ of $p_X$, where $\alpha\in Act$.
 
 We define the process system $\hbox{\bf P}$ as the (labelled) transition system $\hbox{\bf P} = (Pr, Act, \rel{})$, where $\rel{}$ is the smallest relation on $Pr\times Act\times Pr$ satisfying the rules in figure~\ref{figOpSemantics}.
 
@@ -162,7 +162,7 @@ Act_Q    & \{\alpha\in Act\mid\exists q\in Q: q\rel{\alpha}\}\;\;\; \hbox{\sl an
 \qed
 \end{definition}
 
-Having defined the syntax and the operational semantics of CCS-processes it will be interesting to be able to determine whether or not two processes show the same behaviour---they posesses the same derivations.
+Having defined the syntax and the operational semantics of CCS-processes it will be interesting to be able to determine whether or not two processes show the same behaviour---they possesses the same derivations.
 
 
 \section{Simulation, bisimulation, and equivalences}
@@ -256,7 +256,7 @@ Let {\bf P} be given by the diagram below:
 \end{picture}
 
 \noindent
-Then ${\cal R} = \{(p_0,q_0),(p_1,q_1),(p_2,q_1),(p_3,q_2),(p_4,q_3)\}$ is a simulation. Thus, $p_0\preceq q_0$. However, $q_0\not\preceq p_0$, because assume that $\cal R$ is a simulation containing $(q_0,p_0)$, then either $(q_1,p_1)$ or $(q_1,p_2)$ must be in $\cal R$. But in the former case $q_1\rel{c}$ but $p_1\not\rel{c}$ so if ${\cal R}$ is to be a simulation then $(p_1,p_1)\not\in \cal R$. Similarly $(q_1,p_2)\not\in \cal R$ can be argued. Therefore if ${\cal R}$ is a simulation $(q_0,p_0)\not\in\cal R$.
+Then ${\cal R} = \{(p_0,q_0),(p_1,q_1),(p_2,q_1),(p_3,q_2),(p_4,q_3)\}$ is a simulation. Thus, $p_0\preceq q_0$. However, $q_0\not\preceq p_0$, because assume that $\cal R$ is a simulation containing $(q_0,p_0)$, then either $(q_1,p_1)$ or $(q_1,p_2)$ must be in $\cal R$. But in the former case $q_1\rel{c}$ but $p_1\not\rel{c}$ so if ${\cal R}$ is to be a simulation then $(q_1,p_1)\not\in \cal R$. Similarly $(q_1,p_2)\not\in \cal R$ can be argued. Therefore if ${\cal R}$ is a simulation $(q_0,p_0)\not\in\cal R$.
 \qed
 \end{example}
 
@@ -296,14 +296,14 @@ Then ${\cal R}_1 = \{(q_i,p_i)\mid i=1,2,3\}$ and ${\cal R}_2 = \{(p_i,q_i)\mid 
 \qed
 \end{example}
 
-In order to obtain an equivalence that does preserve deadlock properties the notion of bisimulation is introduced. Uner this notion, two processes are considered equivalent if they have the same set of potential first actins and can remain having equal pontentiallity during the course of execution. More formally we have:
+In order to obtain an equivalence that does preserve deadlock properties the notion of bisimulation is introduced. Uner this notion, two processes are considered equivalent if they have the same set of potential first actins and can remain having equal potentiality during the course of execution. More formally we have:
 
 \begin{definition}[Bisimulation]\label{defBisim}
-A binary releation $\cal R$ on $Pr$ is a {\em bisimulation\/} iff both $\cal R$ and
+A binary relation $\cal R$ on $Pr$ is a {\em bisimulation\/} iff both $\cal R$ and
 \[
 {\cal R}^T = \{(p,q)\mid (q,p)\in{\cal R}\}
 \]
-are simulations. Two processes, $p$ and $q$ are said to be {\em bisimulation equivalent\/} iff there exists a bisimulatin $\cal R$ with $p{\cal R}q$. In this case we write $p\sim q$.
+are simulations. Two processes, $p$ and $q$ are said to be {\em bisimulation equivalent\/} iff there exists a bisimulation $\cal R$ with $p{\cal R}q$. In this case we write $p\sim q$.
 \qed
 \end{definition}
 
@@ -350,7 +350,7 @@ ${\cal R}\subseteq Pr^2$ is a strong bisimulation iff whenever $p{\cal R}q$
 \end{proposition}
 
 \noindent
-As we can see from this proposition, it is possible to determine whether two processes are bisimulation equivalent or not just by (recursively) trying to match a derivation $p\rel{\alpha}p'$ of $p$ by a derivation $q\rel{\alpha}q'$ of $q$ so that the derivations of $p'$ again can be matched by some derivation of $q'$ and so on. $q$'s derivations should be treated similarily.
+As we can see from this proposition, it is possible to determine whether two processes are bisimulation equivalent or not just by (recursively) trying to match a derivation $p\rel{\alpha}p'$ of $p$ by a derivation $q\rel{\alpha}q'$ of $q$ so that the derivations of $p'$ again can be matched by some derivation of $q'$ and so on. $q$'s derivations should be treated similarly.
 
 \noindent
 We still have some important properties to state.
@@ -514,7 +514,7 @@ If we can find a weak bisimulation $\cal R$ with $p{\cal R}q$, then we write $p\
 
 (This definition has a special property; the two processes $infinite :=: \tau.infinite$ and $NIL$ are in fact observational equivalent, $infinite\approx NIL$! Thus, whenever we have proved $p\approx q$---e.g.\@ $p$ may be a program and $q$ its specification---we cannot deduce that $p$ nas no infinite unseen actions, even if $q$ has none).
 
-Unlike the definition of (strong) bisimulation the definition of weak bisimulation is not directly suitable for implementation. However, by putting som restrictions on $s$ we obtain the following useful proposition allowing us only to consider observational sequences of lenght at most 1.
+Unlike the definition of (strong) bisimulation the definition of weak bisimulation is not directly suitable for implementation. However, by putting som restrictions on $s$ we obtain the following useful proposition allowing us only to consider observational sequences of length at most 1.
 
 \begin{proposition}\label{propWeakBisimI}
 ${\cal R}\subseteq Pr^2$ is a weak bisimulation if whenever $p{\cal R}q$, $s\in (\Delta\cup\overline{\Delta})^*\cup\{\epsilon\}$ and $\|s\|\leq1$
@@ -547,7 +547,7 @@ p\der{s}p'\;\Rightarrow\;p\obder{\hat{s}}p',\; \|s\|=1
 This proposition is very suitable for implementation purposes as it is easy to determine a process' immediate derivatives.
 
 \noindent
-Naturally, we cannot expect to make abstractions without paying something in return. We can get a hint of the price to pay by the following propositon.
+Naturally, we cannot expect to make abstractions without paying something in return. We can get a hint of the price to pay by the following proposition.
 
 \begin{proposition}\label{propTauApprox}
 $p\approx\tau.p$
@@ -652,7 +652,7 @@ If {\bf P\/} is image-finite then:
 \qed
 \end{theorem}
 
-Using proposition~\ref{propWeakBisim} it is easy to obtain similar characterization of $\approx$ using the following manguage $M_O$. Let the language $M_O$ of formulas be the least set such that:
+Using proposition~\ref{propWeakBisim} it is easy to obtain similar characterization of $\approx$ using the following language $M_O$. Let the language $M_O$ of formulas be the least set such that:
 \begin{enumerate}
 \item $\dtt\in M_O$
 \item $F\wedge G\in M_O$  whenever $F, G\in M_O$
@@ -686,7 +686,7 @@ We will use $\models$ instead of $\models_O$ whenever there is no possibility fo
 \end{notation}
 
 \noindent
-Notice, that $M_O$ gives us the possibility to abstract from $\tau$'s in modal formulas as opposed to $M$. In anology to $M$, $M_O$ has the following (important) property
+Notice, that $M_O$ gives us the possibility to abstract from $\tau$'s in modal formulas as opposed to $M$. In analogy to $M$, $M_O$ has the following (important) property
 \begin{theorem}
 If {\bf P\/} is image-finite under $\obder{}$ then:
 \[
