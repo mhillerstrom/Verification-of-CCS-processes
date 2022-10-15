@@ -583,7 +583,7 @@ The lack of use of modal expressions for reasoning about inequality of processes
 
 We will now sketch a possible way of including modal expressions for use as an argument of inequality in the minimal system.
 
-Intuitively, we will essentially introduce two inference rules in addition to the ones given in figure~\ref{figInferenceSystemBisim}. These new rules will act as `catch all' rules i.e.\@ whenever $matchl^{+}$ or $matchr^{+}$ otherwise would fail the new rules will take over and make a note---construct a modal expression---describing {\em what\/} is separating the two proesses under consideration before failing.
+Intuitively, we will essentially introduce two inference rules in addition to the ones given in figure~\ref{figInferenceSystemBisim}. These new rules will act as `catch all' rules i.e.\@ whenever $matchl^{+}$ or $matchr^{+}$ otherwise would fail the new rules will take over and make a note---construct a modal expression---describing {\em what\/} is separating the two processes under consideration before failing.
 
 \begin{figure}\label{figSketchMatchlp}
 \begin{center}
@@ -627,7 +627,7 @@ F = \may{a}\bigvee\{F_1,\ldots,F_n\}
 \]
 In case one of the processes $p$ and $q$ has no $a$-derivation, then $n=0$ and we therefore define $F_0$ to be $\dtt$ in the $matchl^{+}$-case and $\dff$ in the $matchr^{+}$-case which clearly will satisfy the above requirement.
 
-In the PROLOG-implementation we can at run-time make notes by extending the database with (Horn-)caluses of the form `noteq$(p,p,F)$' saying that $p$ and $q$ are inequivalent because $p$ enjoys the property $F$ which $q$ does not enjoy when $matchl^{+}$ of $matchr^{+}$ fails. However, we have to convince outselves that the principle is sound, i.e.\@ is it correct to make these `noteq' assumptions? An informal plausability argument for this may be given by looking at the verification conditions used in~\cite{Larsen} to prove the soundness and restricted completeness of the minimal system (see figures~\ref{figVerCondA}, \ref{figVerCondB}, and~\ref{figCompletCond}).
+In the PROLOG-implementation we can at run-time make notes by extending the database with (Horn-)clauses of the form `noteq$(p,p,F)$' saying that $p$ and $q$ are inequivalent because $p$ enjoys the property $F$ which $q$ does not enjoy when $matchl^{+}$ of $matchr^{+}$ fails. However, we have to convince outselves that the principle is sound, i.e.\@ is it correct to make these `noteq' assumptions? An informal plausibility argument for this may be given by looking at the verification conditions used in~\cite{Larsen} to prove the soundness and restricted completeness of the minimal system (see figures~\ref{figVerCondA}, \ref{figVerCondB}, and~\ref{figCompletCond}).
 
 Assume that $matchl$ fails. From figure~\ref{figCompletCond} it follows that no matter which $C$ we choose the verification predicate $Ml$ must be false as the antecedent of $Ml$ is guaranteed to hold is the 'calling-sequence' implied by the inference rule set is not violated, and $\sharp_{Ml}$ does not depend on $C$. Then $Ml$ will be false if the conjunction
 \[
@@ -655,7 +655,7 @@ due to the monotony of $\cal B$. However,
 \]
 due to the monotony of $\cal L$. But this is in conflict with equation~\ref{eqThreeTwo} which is supposed to hold for any $C$. Thus we can conclude that whenever $matchl$ fails it is safe and correct to conclude $p\not\sim q$. Similarly, it is safe and correct to conclude that $p\not\sim q$ whenever $matchr$ fails.
 
-Thus, we now know that the inclusion of the two catch-all rules in the inference rule set, making `noteq' assumptions, yields safe and correct assumptions concerning inequivalence of processes. However, this method makes (heavily) use of side-effects (the `noteq' clauses) which makes it very hard to prove rigorously the soundness and completeness of this extended system (we simply does not know of any suitable proof technique for such selfmodifying PROLOG programs). In the next chapter we will therefore, prove properly and rigogously the soundness and completeness of a similar system which avoids the side-effect pitfall.
+Thus, we now know that the inclusion of the two catch-all rules in the inference rule set, making `noteq' assumptions, yields safe and correct assumptions concerning inequivalence of processes. However, this method makes (heavily) use of side-effects (the `noteq' clauses) which makes it very hard to prove rigorously the soundness and completeness of this extended system (we simply does not know of any suitable proof technique for such self-modifying PROLOG programs). In the next chapter we will therefore, prove properly and rigorously the soundness and completeness of a similar system which avoids the side-effect pitfall.
 
 % end of chapter
 

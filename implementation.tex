@@ -91,7 +91,7 @@ Then we can define the two departments and an ideal department as
 \inclverbatim{prolog/examples/ex5c.inp}%
 concentrating on whether or not publications are continuously produced as by the \verb!ideal_department!.
 \inclverbatim{prolog/examples/ex5.out}%
-As we can see, the system found a bisimulation of the \verb!good_department! and \verb!ideal_department! consisting of the pairs listed. Each pair is listed with the lefthand argument (e.g.\@ \verb!good_department!) appearing on the line above the righthand argument (e.g.\@ \verb!ideal_department!) which is output on the immediately following indented line. For \verb!bad_department! we have
+As we can see, the system found a bisimulation of the \verb!good_department! and \verb!ideal_department! consisting of the pairs listed. Each pair is listed with the left hand argument (e.g.\@ \verb!good_department!) appearing on the line above the right hand argument (e.g.\@ \verb!ideal_department!) which is output on the immediately following indented line. For \verb!bad_department! we have
 \inclverbatim{prolog/examples/ex6.out}%
 that it can be \verb!pub!-deadlocked, which certainly is not desirable. Thus, if we want the department to continuously produce publications a vending machine of a type similar to \verb!good_machine! should be chosen.
 \begin{figure}
@@ -157,7 +157,7 @@ and the new system is
 \inclverbatim{prolog/examples/ex9b.inp}%
 This system can now be tested against the specification
 \inclverbatim{prolog/examples/ex9.out}%
-and we see that \verb#sys2# is not equivalent to \verb#spec#! What went wrong? Well, out system claims that it is possible to perform two sequential \verb#out#-experiments following an \verb#in#-experiment on \verb#sys2# which is not the expected bahaviour. But how can that happen? Of cause, the sender keeps on sending although the receiver already has received the message once, and the receiver `thinks' that each messae received after the first is a new one, thus it outputs \verb#out# each time. This problem is actually solved by the Alternating Bit Protocol (please refer to~\cite{Tanenbaum}).
+and we see that \verb#sys2# is not equivalent to \verb#spec#! What went wrong? Well, out system claims that it is possible to perform two sequential \verb#out#-experiments following an \verb#in#-experiment on \verb#sys2# which is not the expected behaviour. But how can that happen? Of cause, the sender keeps on sending although the receiver already has received the message once, and the receiver `thinks' that each message received after the first is a new one, thus it outputs \verb#out# each time. This problem is actually solved by the Alternating Bit Protocol (please refer to~\cite{Tanenbaum}).
 
 The last example we will consider origins from some lecture notes by Robin Milner~\cite{Larsen} and involves the representation of a workshop comprising two men, a hammer, and a mallet. We will use it as a stepping stone for introducing the last improvement to the system. A man can either use a hammer or a mallet to perform a job. \verb#gh# and \verb#ph# represents getting and putting the hammer, likewise \verb#gm# and \verb#pm# for the mallet. The behaviour of a \verb#man# is given by
 \inclverbatim{prolog/examples/ex10a.inp}%
@@ -169,7 +169,7 @@ The specification for \verb#closedshop# is given by the process \verb#donothing#
 \inclverbatim{prolog/examples/ex10d.inp}%
 The following shows that \verb#closedshop# is observational equivalent with \verb#donothing#
 \inclbabyfull{prolog/examples/ex10.out}%
-The (vast) number of pairs in the bisimulation indicates that it is necessary to make further improvements to the system, as fitting the bisimulation pairs together in order to obtain a proof will most certainly become an extremly teadious job even for moderate examples like the \verb#closedshop#. It is like having a jigsaw puzzle with 3000 pieces without a pricture to go with it---it is possible to fit the pieces together but hardly worth the trouble. We need a way of relating the bisimulation pairs. This will be dealt with in the following chapter.
+The (vast) number of pairs in the bisimulation indicates that it is necessary to make further improvements to the system, as fitting the bisimulation pairs together in order to obtain a proof will most certainly become an extremely tedious job even for moderate examples like the \verb#closedshop#. It is like having a jigsaw puzzle with 3000 pieces without a picture to go with it---it is possible to fit the pieces together but hardly worth the trouble. We need a way of relating the bisimulation pairs. This will be dealt with in the following chapter.
 
 % end of chapter
 
