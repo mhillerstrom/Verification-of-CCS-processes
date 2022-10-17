@@ -1,21 +1,29 @@
 %Options: KBD=ISO88592; STD=ISO8859; LANG=ENGLISH; FMT=latex; HYPHEN=default;
-\documentclass[a4,11pt]{report}
+\documentclass[a4paper,11pt]{report}
 
 % M.Sc. Thesis in Computer Science
 %  "Verification of CCS-processes"
-% by Michael Hillerström
+% by Michael Hillerstrï¿½m
 
-\include{pdfinfo}
-\pdfinfo{Michael Hillerstrom}% Author
-        {Automatic verification}% Subject
-        {Verification of CCS-processes}% Title
-        {M.Sc. thesis,verification,automatic,proof,% Keywords
-         PROLOG,CCS,modal,equivalence,inequivalence}
-
-\include{thesisformat}
+% \include{pdfinfo}
+% \pdfinfo{Michael Hillerstrom}% Author
+%         {Automatic verification}% Subject
+%         {Verification of CCS-processes}% Title
+%         {M.Sc. thesis,verification,automatic,proof,% Keywords
+%          PROLOG,CCS,modal,equivalence,inequivalence}
+\usepackage[pdfauthor={Michael Hillerstrom},
+            pdftitle={Verification of CCS-processes},
+            pdfsubject={Automatic verification},
+            pdfkeywords={M.Sc. thesis, verification, automatic, proof, PROLOG, CCS, modal, equivalence, inequivalence},
+            pdfproducer={Latex with hyperref},
+            pdfcreator={pdflatex}]{hyperref}
+\usepackage[latin1]{inputenc}
+\usepackage{latexsym}
 
 
 \begin{document}
+\include{thesisformat}
+
 % First the wrappings...
 \pagestyle{empty}\nopagenum
 \include{cover}

@@ -36,23 +36,26 @@ cat "$SOURCE" |
 sed -n "/^$BEGIN_MARKER_SED/,/^$END_MARKER_SED *\$/p" |
 while read -r line; do
     if [[ ${line:0:$FILTER_MARKER_LEN} = "$FILTER_MARKER" ]]; then
-	FILTER=$(echo -E "$line" | sed "s/^${FILTER_MARKER_SED}[^s]*//" | sed "s?[^a-zA-Z0-9_\/]*\*\/\$??")
+	    FILTER=$(echo -E "$line" | sed "s?${FILTER_MARKER_SED}[ \t]*??" | \
+                 sed 's@[ \t]*\*/.*$@@' \
+                )
         continue
     fi
 
     if [[ ${line:0:$BEGIN_MARKER_LEN} = "$BEGIN_MARKER" ]]; then
-	FILE=$(echo -E "$line" | sed "s/^$BEGIN_MARKER_SED[^a-zA-Z0-9]*//" | sed "s?[^a-zA-Z0-9_\/]*\*\/[\r]*\$??")
-	if [[ $OLDFILE != $FILE ]]; then
+	    FILE=$(echo -E "$line" | sed "s@${BEGIN_MARKER_SED}@@" | \
+               sed 's@[ \t]*\*/.*$@@' \
+               )
+        if [[ $OLDFILE != $FILE ]]; then
             rm -f "$OUTDIR/$FILE" && touch -m "$OUTDIR/$FILE"
         fi
     elif [[ ${line:0:$END_MARKER_LEN} = "$END_MARKER" ]]; then
-	OLDFILE=$FILE; unset FILE FILTER
+        OLDFILE=$FILE; unset FILE FILTER
     elif [[ ! -z "$FILE" ]]; then
         if [[ "x$FILTER" != "x" ]]; then
-           echo -E "$line" | sed "$FILTER" >>"$OUTDIR/$FILE"
-	else
-           echo -E "$line" >> "$OUTDIR/$FILE"
-	fi
+            echo -E "$line" | sed "$FILTER" >>"$OUTDIR/$FILE"
+        else
+            echo -E "$line" >> "$OUTDIR/$FILE"
+        fi
     fi
 done
-

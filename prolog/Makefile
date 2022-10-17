@@ -1,18 +1,11 @@
-EXAMPLES= 
-CMDS= 
-OUTPUTS=newbisim.inp 
-PROLOG=/usr/bin/swipl
+CMDS=newbisim.inp
 
-.SUFFIXES: .out .pl .inp
+.SUFFIXES: .pl .inp
 
-snipplets: $(CMDS) $(OUTPUTS)
+snipplets: $(CMDS)
 
 clean:
 	rm -f *.out *.inp *.cmd *~
 
 .pl.inp:
 	../mksnipplets.sh $< .
-
-.pl.out:
-	$(PROLOG) -s $< 2>/dev/null | sed '1,/!out!/d' >$*.out
-
