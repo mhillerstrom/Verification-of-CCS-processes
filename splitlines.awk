@@ -14,10 +14,12 @@ BEGIN {
 }
 
 {
-	if (length($0) > 80)
-		splitLine($0,LMAX,LMIN,SPLITCHARS,0);
+	line = $0
+
+	if (length(line) > LMAX)
+		splitLine(line,LMAX,LMIN,SPLITCHARS,0);
 	else
-		print $0;
+		print line;
 }
 
 
